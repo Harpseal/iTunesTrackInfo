@@ -4,8 +4,7 @@ A sample iTunes tool to show track information and control iTunes by global hotk
 
 ## Screenshot
 
-| Rainmeter     | iTunesTrackInfo |
-|iTunes Player 2|                 |
+| Rainmeter iTunes Player 2    | iTunesTrackInfo |
 |:-------------:|:---------------:|
 | ![Rainmeter](http://lh5.ggpht.com/-FeN6iUQKZxI/Ur5NoAiGAGI/AAAAAAAABkA/OfZfA9KgFJg/s640/iTunesTrackInfo_rainmeter.png) | ![iTunesTrackInfo](http://lh4.ggpht.com/-oW7Pvbo20PA/Ur5Nm8Z6mxI/AAAAAAAABj4/FVm4JJhXEdM/s640/iTunesTrackInfo.png)|
 
