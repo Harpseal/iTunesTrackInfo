@@ -16,6 +16,7 @@ A sample iTunes tool to show track information and control iTunes by global hotk
 ## The reason I gave up Rainmeter which have been used for several years
 
 There are two things that bother me when I use Rainmeter to show current iTunes information. 
+
 1. The NowPlaying plugin of Rainmeter 3 isn't support the half-star rating which I use very often to manage my music database.
 2. The artwork image IO function of the old iTunesPlugin of Rainmeter 2 isn't optimizated which save a new artwork image file at each UI update even if the player is stopped.
 
