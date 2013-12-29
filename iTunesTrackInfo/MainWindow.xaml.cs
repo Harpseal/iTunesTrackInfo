@@ -239,6 +239,7 @@ namespace iTunesTrackInfo
                     m_iRatingNew = 100;
                 if (m_iRatingNew >= 0)
                     e.Handled = true;
+                m_TickEvent.Set();
                 //m_trayNotifyIcon.ShowBalloonTip(1000, "KeyDown", "KeyDown:" + e.KeyCode + " " + m_iRatingNew + " ", System.Windows.Forms.ToolTipIcon.Info);
             }
             else if (e.KeyCode == System.Windows.Forms.Keys.Clear)
@@ -372,76 +373,125 @@ namespace iTunesTrackInfo
                         {
                             try
                             {
+
+                                IITFileOrCDTrack iIFileTrack = m_iTunes.CurrentTrack as IITFileOrCDTrack;
+
                                 string curTrackInfo;
                                 labelAlbum.Content = m_iTunes.CurrentTrack.Album;
                                 labelTrackName.Content = m_iTunes.CurrentTrack.TrackNumber + "." + m_iTunes.CurrentTrack.Name;
                                 labelArtist.Content = m_iTunes.CurrentTrack.Artist;
 
-                                curTrackInfo = m_iTunes.CurrentTrack.Album + ", " + m_iTunes.CurrentTrack.DiscNumber;
+                                if (iIFileTrack != null)
+                                    curTrackInfo = System.IO.Path.GetDirectoryName(iIFileTrack.Location);
+                                else
+                                    curTrackInfo = m_iTunes.CurrentTrack.Album + ", " + m_iTunes.CurrentTrack.DiscNumber;
                                 Debug.WriteLine("Pre : [" + m_strPreTrackInfo + "]");
                                 Debug.WriteLine("Cur : [" + curTrackInfo + "]");
-                                
-                                IITArtworkCollection artworkCollection = m_iTunes.CurrentTrack.Artwork;
-                                if (artworkCollection.Count == 0)
-                                {
-                                    imageTrackArtwrok.Visibility = Visibility.Hidden;
-                                }
-                                else
-                                {
-                                    string artworkPath = System.IO.Path.GetTempPath() + "iTunesTrackInfo_Artwork";
-                                    IITArtwork artwork = artworkCollection[1];
-                                    switch (artwork.Format)
-                                    {
-                                        case ITArtworkFormat.ITArtworkFormatBMP:
-                                            artworkPath += ".BMP";
-                                            break;
-                                        case ITArtworkFormat.ITArtworkFormatPNG:
-                                            artworkPath += ".PNG";
-                                            break;
-                                        case ITArtworkFormat.ITArtworkFormatJPEG:
-                                            artworkPath += ".JPG";
-                                            break;
-                                        default:
-                                            artworkPath = "";
-                                            break;
-                                    }
-                                    if (artworkPath.Length != 0 && m_strPreTrackInfo != curTrackInfo)
-                                    {
-                                        try
-                                        {
-                                            imageTrackArtwrok.Source = null;
-                                            artwork.SaveArtworkToFile(artworkPath);
 
+                                bool isLoadSuccess = (m_strPreTrackInfo == curTrackInfo);
+
+                                if (iIFileTrack != null)
+                                {
+                                    string[] defaultArtworkName = new string[] {"folder.jpg", "cover.png", "cover.jpg", "folder.png" };
+                                    string trackDirectory = System.IO.Path.GetDirectoryName(iIFileTrack.Location);
+                                    string trackCoverFile;
+                                    for (int i = 0; i < defaultArtworkName.Length && !isLoadSuccess; i++)
+                                    {
+                                        trackCoverFile = trackDirectory + "\\" + defaultArtworkName[i];
+                                        //Console.WriteLine("trackCoverFile " + System.IO.File.Exists(trackCoverFile) + " : " + trackCoverFile);
+                                        if (System.IO.File.Exists(trackCoverFile))
+                                        {
                                             try
                                             {
                                                 var bitmap = new BitmapImage();
                                                 bitmap.BeginInit();
-                                                bitmap.UriSource = new Uri(artworkPath, UriKind.Absolute);
+                                                bitmap.UriSource = new Uri(trackCoverFile, UriKind.Absolute);
                                                 bitmap.CacheOption = BitmapCacheOption.OnLoad;
                                                 bitmap.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
                                                 bitmap.EndInit();
 
                                                 imageTrackArtwrok.Source = bitmap;
                                                 imageTrackArtwrok.Visibility = Visibility.Visible;
+                                                imageTrackArtwrok.Opacity = 1;
+                                                isLoadSuccess = true;
                                             }
                                             catch (System.SystemException)//System.NotSupportedException + System.ArgumentException
                                             {
-                                                imageTrackArtwrok.Visibility = Visibility.Hidden;
                                             }
                                         }
-                                        catch (System.UnauthorizedAccessException)
-                                        {
-                                            Debug.WriteLine("UnauthorizedAccessException");
-                                            imageTrackArtwrok.Visibility = Visibility.Hidden;
-                                        }
+                                    }
+                                }
 
 
+                                if (!isLoadSuccess)
+                                {
+                                    IITArtworkCollection artworkCollection = m_iTunes.CurrentTrack.Artwork;
+                                    if (artworkCollection.Count == 0)
+                                    {
+                                        imageTrackArtwrok.Visibility = Visibility.Hidden;
                                     }
                                     else
-                                        Debug.WriteLine("Skip to change Artwork.");
-                                    Debug.WriteLine("ArtworkPath[" + artworkPath + "]");
-                                    //artworkCollection[0].SaveArtworkToFile();
+                                    {
+                                        string artworkPath = System.IO.Path.GetTempPath() + "iTunesTrackInfo_Artwork";
+                                        IITArtwork artwork = artworkCollection[1];
+                                        switch (artwork.Format)
+                                        {
+                                            case ITArtworkFormat.ITArtworkFormatBMP:
+                                                artworkPath += ".BMP";
+                                                break;
+                                            case ITArtworkFormat.ITArtworkFormatPNG:
+                                                artworkPath += ".PNG";
+                                                break;
+                                            case ITArtworkFormat.ITArtworkFormatJPEG:
+                                                artworkPath += ".JPG";
+                                                break;
+                                            default:
+                                                artworkPath = "";
+                                                break;
+                                        }
+                                        if (artworkPath.Length != 0 && m_strPreTrackInfo != curTrackInfo)
+                                        {
+                                            try
+                                            {
+                                                imageTrackArtwrok.Source = null;
+                                                artwork.SaveArtworkToFile(artworkPath);
 
+                                                try
+                                                {
+                                                    var bitmap = new BitmapImage();
+                                                    bitmap.BeginInit();
+                                                    bitmap.UriSource = new Uri(artworkPath, UriKind.Absolute);
+                                                    bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                                                    bitmap.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                                                    bitmap.EndInit();
+
+                                                    imageTrackArtwrok.Source = bitmap;
+                                                    imageTrackArtwrok.Visibility = Visibility.Visible;
+                                                    imageTrackArtwrok.Opacity = 1;
+                                                }
+                                                catch (System.SystemException)//System.NotSupportedException + System.ArgumentException
+                                                {
+                                                    imageTrackArtwrok.Visibility = Visibility.Hidden;
+                                                }
+                                            }
+                                            catch (System.UnauthorizedAccessException)
+                                            {
+                                                Debug.WriteLine("UnauthorizedAccessException");
+                                                imageTrackArtwrok.Visibility = Visibility.Hidden;
+                                            }
+
+
+                                        }
+                                        else
+                                            Debug.WriteLine("Skip to change Artwork.");
+                                        Debug.WriteLine("ArtworkPath[" + artworkPath + "]");
+
+
+
+
+                                        //artworkCollection[0].SaveArtworkToFile();
+
+                                    }
                                 }
 
                                 m_strPreTrackInfo = curTrackInfo;

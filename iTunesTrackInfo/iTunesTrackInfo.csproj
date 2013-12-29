@@ -36,6 +36,9 @@
   <PropertyGroup>
     <ApplicationIcon>Resources\iTunes.ico</ApplicationIcon>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -132,6 +135,9 @@
   <ItemGroup>
     <Resource Include="Resources\1-navigation-cancel.png" />
     <Resource Include="Resources\9-av-move.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\bg2.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -11,9 +11,14 @@
     <Grid x:Name="gridTotal" Background="#3E000000">
         <StackPanel x:Name="spMainPanel" HorizontalAlignment="Left" VerticalAlignment="Top" Orientation="Horizontal">
             <Grid HorizontalAlignment="Left" Height="120" VerticalAlignment="Top" Width="120">
-                <Image x:Name="imageTrackArtwrok_BG" HorizontalAlignment="Left" VerticalAlignment="Top" Source="Resources/bg.png"/>
-                <Grid HorizontalAlignment="Center" Height="102" VerticalAlignment="Center" Width="102">
-                    <Image x:Name="imageTrackArtwrok" HorizontalAlignment="Center" VerticalAlignment="Center" Source="Resources/testArtwork.png"/>
+                
+                <Grid HorizontalAlignment="Center" Height="110" VerticalAlignment="Center" Width="110">
+                    <Image x:Name="imageTrackArtwrok_BG" HorizontalAlignment="Center" VerticalAlignment="Center" Source="Resources/bg2.png">
+                        <Image.Effect>
+                            <DropShadowEffect BlurRadius="10" ShadowDepth="0" Opacity="1" Color="Black"/>
+                        </Image.Effect>
+                    </Image>
+                    <Image x:Name="imageTrackArtwrok" HorizontalAlignment="Center" VerticalAlignment="Center" Source="Resources/testArtwork.png" Opacity="0"/>
                     <Rectangle VerticalAlignment="Bottom" Height="14" Fill="#3E000000" />
                     <Label x:Name="labelTrackTimeCurrent" Content="00:00"  FontFamily="YaHei Segoe UI" FontSize="10" Foreground="White" VerticalAlignment="Bottom" HorizontalAlignment="Left" Margin="-4,0,0,-2"/>
 
