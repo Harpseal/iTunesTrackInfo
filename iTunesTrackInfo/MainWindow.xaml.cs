@@ -166,7 +166,7 @@ namespace iTunesTrackInfo
 
             imageTrackArtwrok.Visibility = Visibility.Hidden;
             m_window.Topmost = true;
-
+            m_lrcWindow.Topmost = true;
             m_strPreTrackInfo = "";
 
 
@@ -494,18 +494,32 @@ namespace iTunesTrackInfo
                                     {
                                         m_lrcWindow.rebuildLyricsUI();
                                         m_lrcWindow.Show();
-                                        btnLyric.Visibility = Visibility.Visible;
+                                        //btnLyric.Visibility = Visibility.Visible;
+                                        btnLyric.IsEnabled = true;
+                                        btnLyric.Opacity = 1;
                                     }
                                     else if (m_lrcWindow.load(trackDirectory + "\\" + trackName + ".ass"))
                                     {
                                         m_lrcWindow.rebuildLyricsUI();
                                         m_lrcWindow.Show();
-                                        btnLyric.Visibility = Visibility.Visible;
+                                        //btnLyric.Visibility = Visibility.Visible;
+                                        btnLyric.IsEnabled = true;
+                                        btnLyric.Opacity = 1;
+                                    }
+                                    else if (m_lrcWindow.load(trackDirectory + "\\" + trackName + ".srt"))
+                                    {
+                                        m_lrcWindow.rebuildLyricsUI();
+                                        m_lrcWindow.Show();
+                                        //btnLyric.Visibility = Visibility.Visible;
+                                        btnLyric.IsEnabled = true;
+                                        btnLyric.Opacity = 1;
                                     }
                                     else
                                     {
                                         m_lrcWindow.Hide();
-                                        btnLyric.Visibility = Visibility.Collapsed;
+                                        //btnLyric.Visibility = Visibility.Collapsed;
+                                        btnLyric.IsEnabled = false;
+                                        btnLyric.Opacity = 0.3;
                                     }
 
 

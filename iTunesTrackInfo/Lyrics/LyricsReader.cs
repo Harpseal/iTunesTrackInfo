@@ -46,7 +46,6 @@ namespace iTunesLyrics
         private List<List<LyricsItem>> m_listLyricContainer;
 
         private Regex m_regexLRC_Text = null;
-        private Regex m_regexLRC_Time = null;
 
         private Regex m_regexASS_Section = null;
         private Regex m_regexASS_Data = null;
@@ -56,8 +55,9 @@ namespace iTunesLyrics
         private int m_assIdxText;
         private int m_assIdxStyle;
 
-        
-        private Regex m_regexSRT = null;
+        //private Regex m_regexSRT_Index = null;
+        private Regex m_regexSRT_Time = null;
+        private LyricsItem m_srtTempItem = null;
 
         private void initParser(LyricsType type)
         {
@@ -82,6 +82,14 @@ namespace iTunesLyrics
                     m_assIdxTimeEnd = -1;
                     m_assIdxText = -1;
                     m_assIdxStyle = -1;
+                    break;
+
+                case LyricsType.LT_SRT:
+                    //if (m_regexSRT_Index == null)
+                    //    m_regexSRT_Index = new Regex(@"^\d$", RegexOptions.Compiled | RegexOptions.Singleline);
+                    if (m_regexSRT_Time == null)
+                        m_regexSRT_Time = new Regex(@"^(.*?)-->(.*?)$", RegexOptions.Compiled | RegexOptions.Singleline);
+                    m_srtTempItem = null;
                     break;
 
 
@@ -227,6 +235,52 @@ namespace iTunesLyrics
                         }
                         break;
 
+
+                    case LyricsType.LT_SRT:
+                        if (m_srtTempItem != null)
+                        {
+                            string emtpyLine = Regex.Replace(line, @"\s+", string.Empty);
+                            if (emtpyLine.Length == 0)
+                            {
+                                list.Add(m_srtTempItem);
+                                m_srtTempItem = null;
+                            }
+                            else
+                            {
+                                if (m_srtTempItem.strLyrics.Length == 0)
+                                    m_srtTempItem.strLyrics = Regex.Replace(line, @"<.*?>", string.Empty);
+                                else
+                                    m_srtTempItem.strLyrics += Environment.NewLine + Regex.Replace(line, @"<.*?>", string.Empty);
+                            }
+
+
+
+                        }
+                        else
+                        {
+                            matches = m_regexSRT_Time.Split(line);
+                            if (m_regexSRT_Time.IsMatch(line))
+                            {
+                                matches[1] = Regex.Replace(matches[1], @"\s+", string.Empty);
+                                matches[2] = Regex.Replace(matches[2], @"\s+", string.Empty);
+                                string[] timeStrStart = matches[1].Split(':', ',');
+                                string[] timeStrEnd = matches[2].Split(':', ',');
+
+                                m_srtTempItem = new LyricsItem(float.Parse(timeStrStart[0]) * 3600 + float.Parse(timeStrStart[1]) * 60 + float.Parse(timeStrStart[2]) + float.Parse(timeStrStart[3]) / 1000,
+                                               float.Parse(timeStrEnd[0]) * 3600 + float.Parse(timeStrEnd[1]) * 60 + float.Parse(timeStrEnd[2]) + float.Parse(timeStrEnd[3]) / 1000,
+                                               string.Empty);
+                            }
+                            //for (int i = 0; i < matches.Length; i++)
+                            //{
+                            //    Console.WriteLine("   " + i + "/" + matches.Length + "[" + matches[i] + "]");
+                            //}
+                        }
+
+
+
+
+                        break;
+
                 }
             }
             catch (Exception)
@@ -307,7 +361,15 @@ namespace iTunesLyrics
                     string line;
                     line = lrcReader.ReadLine();
 
-                    if (line.Length == 0) continue;
+                    if (line.Length == 0)
+                    {
+                        if (lType == LyricsType.LT_SRT && m_srtTempItem != null)
+                        {
+                            lrcList.Add(m_srtTempItem);
+                            m_srtTempItem = null;
+                        }
+                        continue;
+                    }
 
                     Array.Clear(readBuffer, 0, readBuffer.Length);
                     srclen = (uint)enc.GetBytes(line).Length;
