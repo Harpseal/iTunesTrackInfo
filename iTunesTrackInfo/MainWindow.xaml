@@ -8,8 +8,15 @@
         Closing="Window_Closing" 
         AllowsTransparency="True" WindowStyle="None"  SizeToContent="WidthAndHeight" Background="{x:Null}" ResizeMode="NoResize" Icon="Resources/iTunes.ico">
 
-    <Grid x:Name="gridTotal" Background="#3E000000">
-        <StackPanel x:Name="spMainPanel" HorizontalAlignment="Left" VerticalAlignment="Top" Orientation="Horizontal">
+    <Grid x:Name="gridTotal">
+
+        <Rectangle Margin="10,10,10,10" Fill="#6E000000">
+            <Rectangle.Effect>
+                <BlurEffect/>
+            </Rectangle.Effect>
+
+        </Rectangle>
+        <StackPanel x:Name="spMainPanel" HorizontalAlignment="Left" VerticalAlignment="Top" Orientation="Horizontal" Margin="0,0,20,0">
             <Grid HorizontalAlignment="Left" Height="120" VerticalAlignment="Top" Width="120">
                 
                 <Grid HorizontalAlignment="Center" Height="110" VerticalAlignment="Center" Width="110">
@@ -18,13 +25,54 @@
                             <DropShadowEffect BlurRadius="10" ShadowDepth="0" Opacity="1" Color="Black"/>
                         </Image.Effect>
                     </Image>
-                    <Image x:Name="imageTrackArtwrok" HorizontalAlignment="Center" VerticalAlignment="Center" Source="Resources/testArtwork.png" Opacity="0"/>
+                    <Image x:Name="imageTrackArtwrok" HorizontalAlignment="Center" VerticalAlignment="Center" Source="Resources/bg2.png" Opacity="0" RenderOptions.BitmapScalingMode="HighQuality"/>
                     <Rectangle VerticalAlignment="Bottom" Height="14" Fill="#3E000000" />
                     <Label x:Name="labelTrackTimeCurrent" Content="00:00"  FontFamily="YaHei Segoe UI" FontSize="10" Foreground="White" VerticalAlignment="Bottom" HorizontalAlignment="Left" Margin="-4,0,0,-2"/>
 
                     <Label x:Name="labelTrackTimeTotal" Content="00:00"  FontFamily="YaHei Segoe UI" FontSize="10" Foreground="White" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,-4,-2"/>
 
-                    <ProgressBar x:Name="pbarTrackTime" Height="5" VerticalAlignment="Bottom" Foreground="White" LargeChange="0.1" Value="50" BorderBrush="{x:Null}" Background="#3E000000"/>
+                    <ProgressBar x:Name="pbarTrackTime" Height="5" VerticalAlignment="Bottom" Foreground="White" LargeChange="0.1" Value="50" BorderBrush="{x:Null}" Background="#3E000000" IsIndeterminate="True"/>
+
+                    <StackPanel x:Name="spWindowButtonPanel" HorizontalAlignment="Right" VerticalAlignment="Top" Orientation="Horizontal">
+                        <StackPanel.Background>
+                            <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                                <GradientStop Color="White" Offset="0.01"/>
+                                <GradientStop Offset="1"/>
+                                <GradientStop Color="#5EFFFFFF" Offset="0.953"/>
+                            </LinearGradientBrush>
+                        </StackPanel.Background>
+                        <Button x:Name="btnLyric" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" VerticalAlignment="Stretch" HorizontalAlignment="Left" IsTabStop="False" Focusable="False" Click="btnLyric_Click">
+                            <Image Source="Resources/10-device-access-storage.png" Stretch="Fill" Height="16" Width="16" ToolTip="Close" />
+                        </Button>
+                        <Button x:Name="btnMove" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" VerticalAlignment="Stretch" HorizontalAlignment="Left" PreviewMouseLeftButtonDown="btnMove_PreviewMouseLeftButtonDown" PreviewMouseMove="btnMove_PreviewMouseMove" IsTabStop="False" Focusable="False">
+                            <Image Source="Resources/9-av-move.png" Stretch="Fill" Height="16" Width="16" ToolTip="DropMove" />
+                        </Button>
+                        <Button x:Name="btnClose" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" VerticalAlignment="Stretch" HorizontalAlignment="Left" Click="btnClose_Click" IsTabStop="False" Focusable="False">
+                            <Image Source="Resources/1-navigation-cancel.png" Stretch="Fill" Height="16" Width="16" ToolTip="Close" />
+                        </Button>
+                    </StackPanel>
+
+                    <StackPanel x:Name="spControlButtonPanel" HorizontalAlignment="Center" VerticalAlignment="Bottom" Orientation="Horizontal" Opacity="0">
+                        <StackPanel.Background>
+                            <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                                <GradientStop Color="White" Offset="0.99"/>
+                                <GradientStop/>
+                                <GradientStop Color="#5EFFFFFF" Offset="0.047"/>
+                            </LinearGradientBrush>
+                        </StackPanel.Background>
+                        <Button x:Name="btnPrevious" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" VerticalAlignment="Stretch" HorizontalAlignment="Left" Width="38" Click="btnPrevious_Click" IsTabStop="False" Focusable="False">
+                            <Image Source="Resources/9-av-previous.png" Stretch="Fill" Height="32" Width="32" ToolTip="Settings" />
+                        </Button>
+                        <Button x:Name="btnPause" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" VerticalAlignment="Stretch" HorizontalAlignment="Left" Width="38" Click="btnPause_Click" IsTabStop="False" Focusable="False">
+                            <Image Source="Resources/9-av-pause.png" Stretch="Fill" Height="32" Width="32" ToolTip="Settings" />
+                        </Button>
+                        <Button x:Name="btnPlay" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" VerticalAlignment="Stretch" HorizontalAlignment="Left" Width="38" Click="btnPlay_Click" IsTabStop="False" Focusable="False">
+                            <Image Source="Resources/9-av-play.png" Stretch="Fill" Height="32" Width="32" ToolTip="Settings" />
+                        </Button>
+                        <Button x:Name="btnNext" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" VerticalAlignment="Stretch" HorizontalAlignment="Left" Width="38" Click="btnNext_Click" IsTabStop="False" Focusable="False">
+                            <Image Source="Resources/9-av-next.png" Stretch="Fill" Height="32" Width="32" ToolTip="Settings" />
+                        </Button>
+                    </StackPanel>
                 </Grid>
 
 
@@ -64,43 +112,7 @@
 
             </StackPanel>
         </StackPanel>
-        <StackPanel x:Name="spControlButtonPanel" HorizontalAlignment="Center" VerticalAlignment="Bottom" Orientation="Horizontal" Opacity="0">
-            <StackPanel.Background>
-                <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
-                    <GradientStop Color="White" Offset="0.99"/>
-                    <GradientStop/>
-                    <GradientStop Color="#5EFFFFFF" Offset="0.047"/>
-                </LinearGradientBrush>
-            </StackPanel.Background>
-            <Button x:Name="btnPrevious" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" VerticalAlignment="Stretch" HorizontalAlignment="Left" Width="38" Click="btnPrevious_Click" IsTabStop="False">
-                <Image Source="Resources/9-av-previous.png" Stretch="Fill" Height="32" Width="32" ToolTip="Settings" />
-            </Button>
-            <Button x:Name="btnPause" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" VerticalAlignment="Stretch" HorizontalAlignment="Left" Width="38" Click="btnPause_Click" IsTabStop="False">
-                <Image Source="Resources/9-av-pause.png" Stretch="Fill" Height="32" Width="32" ToolTip="Settings" />
-            </Button>
-            <Button x:Name="btnPlay" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" VerticalAlignment="Stretch" HorizontalAlignment="Left" Width="38" Click="btnPlay_Click" IsTabStop="False">
-                <Image Source="Resources/9-av-play.png" Stretch="Fill" Height="32" Width="32" ToolTip="Settings" />
-            </Button>
-            <Button x:Name="btnNext" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" VerticalAlignment="Stretch" HorizontalAlignment="Left" Width="38" Click="btnNext_Click" IsTabStop="False">
-                <Image Source="Resources/9-av-next.png" Stretch="Fill" Height="32" Width="32" ToolTip="Settings" />
-            </Button>
-        </StackPanel>
-
-        <StackPanel x:Name="spWindowButtonPanel" HorizontalAlignment="Right" VerticalAlignment="Top" Orientation="Horizontal">
-            <StackPanel.Background>
-                <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
-                    <GradientStop Color="White" Offset="0.01"/>
-                    <GradientStop Offset="1"/>
-                    <GradientStop Color="#5EFFFFFF" Offset="0.953"/>
-                </LinearGradientBrush>
-            </StackPanel.Background>
-            <Button x:Name="btnMove" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" VerticalAlignment="Stretch" HorizontalAlignment="Left" PreviewMouseLeftButtonDown="btnMove_PreviewMouseLeftButtonDown" PreviewMouseMove="btnMove_PreviewMouseMove" IsTabStop="False">
-                <Image Source="Resources/9-av-move.png" Stretch="Fill" Height="16" Width="16" ToolTip="DropMove" />
-            </Button>
-            <Button x:Name="btnClose" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" VerticalAlignment="Stretch" HorizontalAlignment="Left" Click="btnClose_Click" IsTabStop="False">
-                <Image Source="Resources/1-navigation-cancel.png" Stretch="Fill" Height="16" Width="16" ToolTip="Close" />
-            </Button>
-        </StackPanel>
+        
     </Grid>
 
 

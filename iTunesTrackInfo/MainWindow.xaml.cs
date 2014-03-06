@@ -20,6 +20,8 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Media.Animation;
 
+using iTunesLyrics;
+
 
 namespace iTunesTrackInfo
 {
@@ -64,10 +66,14 @@ namespace iTunesTrackInfo
 
         Mutex mutex;
 
+        LyricsWindow m_lrcWindow;
+        private const int m_refreshInterval = 1000;
+
         public MainWindow()
         {
             InitializeComponent();
             m_window = this;
+            m_lrcWindow = new LyricsWindow();
 
             bool result;
             mutex = new System.Threading.Mutex(true, "iTunesTrackInfo_MainWindow", out result);
@@ -86,19 +92,43 @@ namespace iTunesTrackInfo
             m_trayNotifyIcon = new System.Windows.Forms.NotifyIcon();
             m_trayNotifyIcon.Icon = Properties.Resources.iTunes16;
             m_trayNotifyIcon.Visible = true;
-            m_trayNotifyIcon.DoubleClick +=
-                delegate(object sender, EventArgs args)
+            //m_trayNotifyIcon.DoubleClick +=
+            //    delegate(object sender, EventArgs args)
+            //    {
+            //        this.Show();
+            //        this.WindowState = WindowState.Normal;
+            //        this.Activate();
+            //        //this.ShowInTaskbar = !this.ShowInTaskbar;
+            //        if (this.IsHitTestVisible == false)
+            //        {
+            //            this.IsHitTestVisible = true;
+            //            this.m_sbAniIn.Begin(gridTotal);
+            //        }
+            //    };
+
+            m_trayNotifyIcon.MouseClick +=
+                delegate(object sender, System.Windows.Forms.MouseEventArgs args)
                 {
-                    this.Show();
-                    this.WindowState = WindowState.Normal;
-                    this.Activate();
-                    this.ShowInTaskbar = !this.ShowInTaskbar;
-                    if (this.IsHitTestVisible == false)
+                    if (args.Button == System.Windows.Forms.MouseButtons.Left)
                     {
-                        this.IsHitTestVisible = true;
-                        this.m_sbAniIn.Begin(gridTotal);
+                        this.Show();
+                        this.WindowState = WindowState.Normal;
+                        this.Activate();
+                        
+                        if (this.IsHitTestVisible == false)
+                        {
+                            this.IsHitTestVisible = true;
+                            this.m_sbAniIn.Begin(gridTotal);
+                        }
                     }
+                    else if (args.Button == System.Windows.Forms.MouseButtons.Right)
+                    {
+                        this.ShowInTaskbar = !this.ShowInTaskbar;
+                        m_lrcWindow.ShowInTaskbar = !m_lrcWindow.ShowInTaskbar;
+                    }
+
                 };
+
 
             Thread thread = new Thread(InitITunes);
             thread.Start();
@@ -107,7 +137,7 @@ namespace iTunesTrackInfo
             DoubleAnimation daFadeOut = new DoubleAnimation();
             daFadeOut.Duration = new TimeSpan(0, 0, 0, 0, 200);
             daFadeOut.To = 0.0;
-
+            
             m_sbAniOut.Children.Add(daFadeOut);
             Storyboard.SetTargetProperty(daFadeOut, new PropertyPath(UIElement.OpacityProperty));
 
@@ -120,12 +150,14 @@ namespace iTunesTrackInfo
             m_sbAniIn.Children.Add(daFadeIn);
             Storyboard.SetTargetProperty(daFadeIn, new PropertyPath(UIElement.OpacityProperty));
 
+            //imageTrackArtwrok.VisualBitmapScalingMode = System.Windows.Media.BitmapScalingMode.HighQuality;
 
             this.ShowInTaskbar = false;
+            m_lrcWindow.ShowInTaskbar = false;
 
 
             m_timer = new System.Windows.Forms.Timer();
-            m_timer.Interval = 1000;
+            m_timer.Interval = m_refreshInterval;
             m_timer.Tick += new EventHandler(Timer_Tick);
             m_timer.Start();
 
@@ -185,6 +217,60 @@ namespace iTunesTrackInfo
                     this.Left = bounds.Left;
                     //this.Width = bounds.Width;
                     //this.Height = bounds.Height;
+                }
+            }
+            catch (Exception e)
+            {
+                //MessageBox.Show("[" + TomatoTimerWPF.Properties.Settings.Default.WindowRestoreBounds + "]");
+            }
+
+            try
+            {
+                Rect bounds = Rect.Parse(iTunesTrackInfo.Properties.Settings.Default.LyricsRestoreBounds);
+                int iInsideLT, iInsideRB;
+                iInsideLT = iInsideRB = -1;
+                for (int s = 0; s < System.Windows.Forms.Screen.AllScreens.Length; s++)
+                {
+                    System.Windows.Forms.Screen screen = System.Windows.Forms.Screen.AllScreens[s];
+                    if (bounds.Left >= screen.Bounds.Left && bounds.Top >= screen.Bounds.Top &&
+                        bounds.Left < screen.Bounds.Right && bounds.Top < screen.Bounds.Bottom)
+                    {
+                        iInsideLT = s;
+                    }
+
+                    if (bounds.Right >= screen.Bounds.Left && bounds.Bottom >= screen.Bounds.Top &&
+                        bounds.Right < screen.Bounds.Right && bounds.Bottom < screen.Bounds.Bottom)
+                    {
+                        iInsideRB = s;
+                    }
+                }
+                if (iInsideLT != -1 || iInsideRB != -1)
+                {
+                    int recheckScreen = -1;
+
+                    if (iInsideLT == -1)
+                        recheckScreen = iInsideRB;
+                    else if (iInsideRB == -1)
+                        recheckScreen = iInsideLT;
+
+                    if (recheckScreen != -1)
+                    {
+                        System.Windows.Forms.Screen screen = System.Windows.Forms.Screen.AllScreens[recheckScreen];
+
+                        if (bounds.X < screen.Bounds.Left)
+                            bounds.X = screen.Bounds.Left;
+                        if (bounds.Y < screen.Bounds.Top)
+                            bounds.Y = screen.Bounds.Top;
+                        if (bounds.Right > screen.Bounds.Right)
+                            bounds.X -= bounds.Right - screen.Bounds.Right;
+                        if (bounds.Bottom > screen.Bounds.Bottom)
+                            bounds.Y -= bounds.Bottom - screen.Bounds.Bottom;
+
+                    }
+                    m_lrcWindow.Top = bounds.Top;
+                    m_lrcWindow.Left = bounds.Left;
+                    m_lrcWindow.Width = bounds.Width;
+                    m_lrcWindow.Height = bounds.Height;
                 }
             }
             catch (Exception e)
@@ -318,6 +404,9 @@ namespace iTunesTrackInfo
                             {
                                 case ITPlayerState.ITPlayerStatePlaying:
                                     TimeSpan time = new TimeSpan(0, 0, m_iTunes.PlayerPosition);
+
+                                    m_lrcWindow.setSecondPositon((float)time.TotalSeconds, m_refreshInterval);
+
                                     if (time.Hours != 0)
                                         labelTrackTimeCurrent.Content = time.ToString(@"hh\:mm\:ss");
                                     else
@@ -327,6 +416,7 @@ namespace iTunesTrackInfo
                                     btnPause.Visibility = Visibility.Visible;
                                     double process = (double)m_iTunes.PlayerPosition * 100.0 / (double)Math.Max(1, m_iTunes.CurrentTrack.Duration);
                                     pbarTrackTime.Value = Math.Min(100.0, process);
+                                    pbarTrackTime.IsIndeterminate = false;
 
                                     if (m_iRatingNew>=0)
                                     {
@@ -338,6 +428,7 @@ namespace iTunesTrackInfo
                                         m_iTunes.Pause();
                                         m_isKeyPauseResume = false;
                                     }
+                                    
                                     break;
                                 case ITPlayerState.ITPlayerStateStopped:
                                     m_iRatingNew = -1;
@@ -388,12 +479,39 @@ namespace iTunesTrackInfo
                                 Debug.WriteLine("Pre : [" + m_strPreTrackInfo + "]");
                                 Debug.WriteLine("Cur : [" + curTrackInfo + "]");
 
+                                
+                                
+
                                 bool isLoadSuccess = (m_strPreTrackInfo == curTrackInfo);
 
                                 if (iIFileTrack != null)
                                 {
-                                    string[] defaultArtworkName = new string[] {"folder.jpg", "cover.png", "cover.jpg", "folder.png" };
                                     string trackDirectory = System.IO.Path.GetDirectoryName(iIFileTrack.Location);
+                                    string trackName = System.IO.Path.GetFileNameWithoutExtension(iIFileTrack.Location);
+                                    Console.WriteLine("GetFileNameWithoutExtension : [" + trackDirectory + "\\" + trackName + "]");
+                                    m_lrcWindow.clear();
+                                    if (m_lrcWindow.load(trackDirectory + "\\" + trackName + ".lrc"))
+                                    {
+                                        m_lrcWindow.rebuildLyricsUI();
+                                        m_lrcWindow.Show();
+                                        btnLyric.Visibility = Visibility.Visible;
+                                    }
+                                    else if (m_lrcWindow.load(trackDirectory + "\\" + trackName + ".ass"))
+                                    {
+                                        m_lrcWindow.rebuildLyricsUI();
+                                        m_lrcWindow.Show();
+                                        btnLyric.Visibility = Visibility.Visible;
+                                    }
+                                    else
+                                    {
+                                        m_lrcWindow.Hide();
+                                        btnLyric.Visibility = Visibility.Collapsed;
+                                    }
+
+
+
+                                    string[] defaultArtworkName = new string[] {"folder.jpg", "cover.png", "cover.jpg", "folder.png" };
+                                    
                                     string trackCoverFile;
                                     for (int i = 0; i < defaultArtworkName.Length && !isLoadSuccess; i++)
                                     {
@@ -411,8 +529,8 @@ namespace iTunesTrackInfo
                                                 bitmap.EndInit();
 
                                                 imageTrackArtwrok.Source = bitmap;
-                                                imageTrackArtwrok.Visibility = Visibility.Visible;
                                                 imageTrackArtwrok.Opacity = 1;
+                                                imageTrackArtwrok.Visibility = Visibility.Visible;
                                                 isLoadSuccess = true;
                                             }
                                             catch (System.SystemException)//System.NotSupportedException + System.ArgumentException
@@ -594,6 +712,7 @@ namespace iTunesTrackInfo
             IITTrack track = (IITTrack)iTrack;
             Debug.WriteLine("OnPlayerPlayEvent " + (track != null) + " " + track.Rating + " " + track.Album + " " + track.Name);
             m_iTunesEvent.Set();
+            
             //m_window.m_iTunes.Pause();
             //MainWindow.m_window.btnPlay.Visibility = Visibility.Hidden;
             //MainWindow.m_window.btnPause.Visibility = Visibility.Visible;
@@ -613,9 +732,12 @@ namespace iTunesTrackInfo
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
+            
+
             m_CloseEvent.Set();
 
             Properties.Settings.Default.WindowRestoreBounds = this.RestoreBounds.ToString();
+            Properties.Settings.Default.LyricsRestoreBounds = m_lrcWindow.RestoreBounds.ToString();
             Properties.Settings.Default.Save();
 
             if (m_trayNotifyIcon != null)
@@ -636,6 +758,8 @@ namespace iTunesTrackInfo
             {
                 m_threadUpdate.Abort();
             }
+
+            m_lrcWindow.Close();
         }
 
         private void btnClose_Click(object sender, RoutedEventArgs e)
@@ -759,6 +883,12 @@ namespace iTunesTrackInfo
            {
                m_keyhook = null;
            }
+       }
+
+       private void btnLyric_Click(object sender, RoutedEventArgs e)
+       {
+           if (m_lrcWindow.getLrcCount() != 0)
+               m_lrcWindow.Show();
        }
 
     }

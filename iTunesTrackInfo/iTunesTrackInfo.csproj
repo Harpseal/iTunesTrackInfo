@@ -40,6 +40,9 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="EncodingTools">
+      <HintPath>Lyrics\EncodingTools.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
@@ -61,7 +64,15 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Lyrics\FindVisualChildHelper.cs" />
+    <Compile Include="Lyrics\LyricsReader.cs" />
+    <Compile Include="Lyrics\LyricsWindow.xaml.cs" />
+    <Compile Include="Lyrics\ScrollAnimationBehavior.cs" />
     <Compile Include="UserActivityHook.cs" />
+    <Page Include="Lyrics\LyricsWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -138,6 +149,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\bg2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\10-device-access-storage.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
