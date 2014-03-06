@@ -347,7 +347,7 @@ namespace iTunesLyrics
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                //Console.WriteLine("LyricsReader : " + e.ToString());
                 //System.Windows.Forms.MessageBox.Show(e.ToString());
                 res = false;
             }

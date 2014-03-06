@@ -145,6 +145,9 @@ namespace iTunesLyrics
         public void clear()
         {
             svLyricsScroll.ScrollToVerticalOffset(0);
+            m_iPreHitLyrics = -1;
+            m_iAniHitLyrics = -1;
+
             m_lrcReader.clear();
             spLyricsMain.Children.Clear();
         }

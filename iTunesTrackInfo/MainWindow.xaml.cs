@@ -523,9 +523,9 @@ namespace iTunesTrackInfo
                                             {
                                                 var bitmap = new BitmapImage();
                                                 bitmap.BeginInit();
-                                                bitmap.UriSource = new Uri(trackCoverFile, UriKind.Absolute);
                                                 bitmap.CacheOption = BitmapCacheOption.OnLoad;
-                                                bitmap.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                                                bitmap.CreateOptions = BitmapCreateOptions.IgnoreImageCache | BitmapCreateOptions.IgnoreColorProfile;
+                                                bitmap.UriSource = new Uri(trackCoverFile, UriKind.Absolute);
                                                 bitmap.EndInit();
 
                                                 imageTrackArtwrok.Source = bitmap;
@@ -545,6 +545,8 @@ namespace iTunesTrackInfo
 
                                 if (!isLoadSuccess)
                                 {
+                                    Console.WriteLine("trackCoverFile try to read from iTunes.");
+
                                     IITArtworkCollection artworkCollection = m_iTunes.CurrentTrack.Artwork;
                                     if (artworkCollection.Count == 0)
                                     {
@@ -582,7 +584,7 @@ namespace iTunesTrackInfo
                                                     bitmap.BeginInit();
                                                     bitmap.UriSource = new Uri(artworkPath, UriKind.Absolute);
                                                     bitmap.CacheOption = BitmapCacheOption.OnLoad;
-                                                    bitmap.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                                                    bitmap.CreateOptions = BitmapCreateOptions.IgnoreImageCache | BitmapCreateOptions.IgnoreColorProfile;
                                                     bitmap.EndInit();
 
                                                     imageTrackArtwrok.Source = bitmap;
