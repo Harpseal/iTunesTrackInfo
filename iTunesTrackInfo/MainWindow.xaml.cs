@@ -516,7 +516,7 @@ namespace iTunesTrackInfo
                                     for (int i = 0; i < defaultArtworkName.Length && !isLoadSuccess; i++)
                                     {
                                         trackCoverFile = trackDirectory + "\\" + defaultArtworkName[i];
-                                        //Console.WriteLine("trackCoverFile " + System.IO.File.Exists(trackCoverFile) + " : " + trackCoverFile);
+                                        Console.WriteLine("trackCoverFile " + System.IO.File.Exists(trackCoverFile) + " : " + trackCoverFile);
                                         if (System.IO.File.Exists(trackCoverFile))
                                         {
                                             try
@@ -533,8 +533,10 @@ namespace iTunesTrackInfo
                                                 imageTrackArtwrok.Visibility = Visibility.Visible;
                                                 isLoadSuccess = true;
                                             }
-                                            catch (System.SystemException)//System.NotSupportedException + System.ArgumentException
+                                            catch (System.SystemException e)//System.NotSupportedException + System.ArgumentException
                                             {
+                                                Console.WriteLine("trackCoverFile SystemException!!" + e.ToString());
+                                                isLoadSuccess = false;
                                             }
                                         }
                                     }

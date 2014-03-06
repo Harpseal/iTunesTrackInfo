@@ -4,16 +4,21 @@
         Title="LyricsWindow" Height="120" Width="300"
         AllowsTransparency="True" WindowStyle="None" Background="{x:Null}" ResizeMode="CanResizeWithGrip">
     <Grid>
-        <Rectangle>
+        <!--Rectangle>
             <Rectangle.Fill>
                 <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
-                    <GradientStop Offset="0"/>
-                    <GradientStop Color="White" Offset="0.3"/>
                     <GradientStop Offset="1"/>
-                    <GradientStop Color="White" Offset="0.7"/>
+                    <GradientStop Color="White" Offset="0.5"/>
+                    <GradientStop/>
                 </LinearGradientBrush>
             </Rectangle.Fill>
+        </Rectangle-->
+        <Rectangle Margin="5,5,5,5" Fill="#6EFFFFFF">
+            <Rectangle.Effect>
+                <BlurEffect/>
+            </Rectangle.Effect>
         </Rectangle>
+        
         <ScrollViewer x:Name="svLyricsScroll" VerticalScrollBarVisibility="Hidden">
             <StackPanel x:Name="spLyricsMain">
             </StackPanel>

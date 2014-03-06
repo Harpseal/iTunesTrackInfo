@@ -14,8 +14,8 @@
             <Rectangle.Effect>
                 <BlurEffect/>
             </Rectangle.Effect>
-
         </Rectangle>
+        
         <StackPanel x:Name="spMainPanel" HorizontalAlignment="Left" VerticalAlignment="Top" Orientation="Horizontal" Margin="0,0,20,0">
             <Grid HorizontalAlignment="Left" Height="120" VerticalAlignment="Top" Width="120">
                 

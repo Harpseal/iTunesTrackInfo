@@ -1,0 +1,16 @@
+﻿<Window x:Class="iTunesLyrics.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MainWindow" Height="350" Width="525">
+    <Grid>
+        <StackPanel>
+            <Button Content="Show" Click="Button_Click"></Button>
+            <Button Content="Hide" Click="Button_Click_1"></Button>
+            <Button Content="Reset Time" Click="Button_Click_2"></Button>
+            <TextBlock x:Name="timeTextBlock" Text="00:00:00" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <TextBlock.Effect>
+                    <DropShadowEffect ShadowDepth="0"/>
+                </TextBlock.Effect></TextBlock>
+        </StackPanel>
+    </Grid>
+</Window>
