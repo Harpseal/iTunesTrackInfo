@@ -58,6 +58,7 @@ namespace iTunesLyrics
         //private Regex m_regexSRT_Index = null;
         private Regex m_regexSRT_Time = null;
         private LyricsItem m_srtTempItem = null;
+        private List<string> m_srtLyricsPool;
 
         private void initParser(LyricsType type)
         {
@@ -89,7 +90,10 @@ namespace iTunesLyrics
                     //    m_regexSRT_Index = new Regex(@"^\d$", RegexOptions.Compiled | RegexOptions.Singleline);
                     if (m_regexSRT_Time == null)
                         m_regexSRT_Time = new Regex(@"^(.*?)-->(.*?)$", RegexOptions.Compiled | RegexOptions.Singleline);
+                    if (m_srtLyricsPool == null)
+                        m_srtLyricsPool = new List<string>();
                     m_srtTempItem = null;
+                    m_srtLyricsPool.Clear();
                     break;
 
 
@@ -237,48 +241,47 @@ namespace iTunesLyrics
 
 
                     case LyricsType.LT_SRT:
-                        if (m_srtTempItem != null)
+
+
+                         
+                        if (m_regexSRT_Time.IsMatch(line))
                         {
-                            string emtpyLine = Regex.Replace(line, @"\s+", string.Empty);
-                            if (emtpyLine.Length == 0)
+                            matches = m_regexSRT_Time.Split(line);
+
+                            matches[1] = Regex.Replace(matches[1], @"\s+", string.Empty);
+                            matches[2] = Regex.Replace(matches[2], @"\s+", string.Empty);
+                            string[] timeStrStart = matches[1].Split(':', ',');
+                            string[] timeStrEnd = matches[2].Split(':', ',');
+
+                            if (m_srtTempItem!=null)
                             {
+                                for (int l=0;l<m_srtLyricsPool.Count-1;l++)
+                                {
+                                    if (l == 0)
+                                        m_srtTempItem.strLyrics = m_srtLyricsPool[l];
+                                    else
+                                        m_srtTempItem.strLyrics += Environment.NewLine + m_srtLyricsPool[l];
+                                }
                                 list.Add(m_srtTempItem);
                                 m_srtTempItem = null;
                             }
-                            else
-                            {
-                                if (m_srtTempItem.strLyrics.Length == 0)
-                                    m_srtTempItem.strLyrics = Regex.Replace(line, @"<.*?>", string.Empty);
-                                else
-                                    m_srtTempItem.strLyrics += Environment.NewLine + Regex.Replace(line, @"<.*?>", string.Empty);
-                            }
 
-
-
+                            m_srtTempItem = new LyricsItem(float.Parse(timeStrStart[0]) * 3600 + float.Parse(timeStrStart[1]) * 60 + float.Parse(timeStrStart[2]) + float.Parse(timeStrStart[3]) / 1000,
+                                            float.Parse(timeStrEnd[0]) * 3600 + float.Parse(timeStrEnd[1]) * 60 + float.Parse(timeStrEnd[2]) + float.Parse(timeStrEnd[3]) / 1000,
+                                            string.Empty);
+                            m_srtLyricsPool.Clear();
                         }
                         else
                         {
-                            matches = m_regexSRT_Time.Split(line);
-                            if (m_regexSRT_Time.IsMatch(line))
+                            string emtpyLine = Regex.Replace(line, @"\s+", string.Empty);
+                            if (emtpyLine.Length != 0)
                             {
-                                matches[1] = Regex.Replace(matches[1], @"\s+", string.Empty);
-                                matches[2] = Regex.Replace(matches[2], @"\s+", string.Empty);
-                                string[] timeStrStart = matches[1].Split(':', ',');
-                                string[] timeStrEnd = matches[2].Split(':', ',');
-
-                                m_srtTempItem = new LyricsItem(float.Parse(timeStrStart[0]) * 3600 + float.Parse(timeStrStart[1]) * 60 + float.Parse(timeStrStart[2]) + float.Parse(timeStrStart[3]) / 1000,
-                                               float.Parse(timeStrEnd[0]) * 3600 + float.Parse(timeStrEnd[1]) * 60 + float.Parse(timeStrEnd[2]) + float.Parse(timeStrEnd[3]) / 1000,
-                                               string.Empty);
+                                string lineClean;
+                                lineClean = Regex.Replace(line, @"{.*?}", string.Empty);
+                                lineClean = Regex.Replace(lineClean, @"<.*?>", string.Empty);
+                                m_srtLyricsPool.Add(lineClean);
                             }
-                            //for (int i = 0; i < matches.Length; i++)
-                            //{
-                            //    Console.WriteLine("   " + i + "/" + matches.Length + "[" + matches[i] + "]");
-                            //}
                         }
-
-
-
-
                         break;
 
                 }
@@ -362,14 +365,7 @@ namespace iTunesLyrics
                     line = lrcReader.ReadLine();
 
                     if (line.Length == 0)
-                    {
-                        if (lType == LyricsType.LT_SRT && m_srtTempItem != null)
-                        {
-                            lrcList.Add(m_srtTempItem);
-                            m_srtTempItem = null;
-                        }
                         continue;
-                    }
 
                     Array.Clear(readBuffer, 0, readBuffer.Length);
                     srclen = (uint)enc.GetBytes(line).Length;
@@ -377,22 +373,22 @@ namespace iTunesLyrics
 
                     multilang2.ConvertString(ref nullptr, (uint)enc.CodePage, (uint)enc_uni.CodePage, ref enc.GetBytes(line)[0], ref srclen, ref readBuffer[0], ref dstlen);
                     line = enc_uni.GetString(readBuffer, 0, (int)dstlen);
-                    
-
-                    //Console.WriteLine("count:" + count + "{" + line + "}");
 
                     addString2LyricsItem(lrcList, lType, line);
-
-
-                    
-                    ////foreach (string match in matches)
-                    //for (int i = 0; i < matches.Length;i++ )
-                    //{
-                    //    Console.WriteLine("   " + i + "[" + matches[i] + "]");
-                    //}
-                    
-
                     count++;
+                }
+
+                if (lType == LyricsType.LT_SRT && m_srtTempItem!=null)
+                {
+                    for (int l = 0; l < m_srtLyricsPool.Count; l++)
+                    {
+                        if (l == 0)
+                            m_srtTempItem.strLyrics = m_srtLyricsPool[l];
+                        else
+                            m_srtTempItem.strLyrics += Environment.NewLine + m_srtLyricsPool[l];
+                    }
+                    lrcList.Add(m_srtTempItem);
+                    m_srtTempItem = null;
                 }
 
                 lrcReader.Close();

@@ -12,7 +12,10 @@ A sample iTunes tool to show track information and control iTunes by global hotk
 |:---------------:|
 | ![iTunesTrackInfo](http://lh4.ggpht.com/-oW7Pvbo20PA/Ur5Nm8Z6mxI/AAAAAAAABj4/FVm4JJhXEdM/s640/iTunesTrackInfo.png)|
 
+### Lyrics (*.lrc, *.ass and *.srt are supported.)
+![Screenshot_lyrics](http://lh4.ggpht.com/-_C7vDrN9r34/UxqR1ER5W9I/AAAAAAAABlg/tvRiS_jNwZE/s640/Screenshot_lyrics.png)
 
+ 
 ## The reason I gave up Rainmeter which have been used for several years
 
 There are two things that bother me when I use Rainmeter to show current iTunes information. 

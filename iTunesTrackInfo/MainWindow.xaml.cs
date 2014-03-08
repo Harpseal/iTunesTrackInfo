@@ -62,6 +62,7 @@ namespace iTunesTrackInfo
         bool m_isShiftDown = false;
         bool m_isKeyPauseResume = false;
         int m_iRatingNew = -1;
+        string m_strPreTrackFolder;
         string m_strPreTrackInfo;
 
         Mutex mutex;
@@ -167,7 +168,9 @@ namespace iTunesTrackInfo
             imageTrackArtwrok.Visibility = Visibility.Hidden;
             m_window.Topmost = true;
             m_lrcWindow.Topmost = true;
+            m_strPreTrackFolder = "";
             m_strPreTrackInfo = "";
+
 
 
             try
@@ -467,67 +470,80 @@ namespace iTunesTrackInfo
 
                                 IITFileOrCDTrack iIFileTrack = m_iTunes.CurrentTrack as IITFileOrCDTrack;
 
-                                string curTrackInfo;
+                                string curTrackFolder,curTrackInfo;
                                 labelAlbum.Content = m_iTunes.CurrentTrack.Album;
                                 labelTrackName.Content = m_iTunes.CurrentTrack.TrackNumber + "." + m_iTunes.CurrentTrack.Name;
                                 labelArtist.Content = m_iTunes.CurrentTrack.Artist;
 
                                 if (iIFileTrack != null)
-                                    curTrackInfo = System.IO.Path.GetDirectoryName(iIFileTrack.Location);
+                                {
+                                    curTrackFolder = System.IO.Path.GetDirectoryName(iIFileTrack.Location);
+                                    curTrackInfo = iIFileTrack.Location;
+                                }
                                 else
-                                    curTrackInfo = m_iTunes.CurrentTrack.Album + ", " + m_iTunes.CurrentTrack.DiscNumber;
-                                Debug.WriteLine("Pre : [" + m_strPreTrackInfo + "]");
-                                Debug.WriteLine("Cur : [" + curTrackInfo + "]");
+                                {
+                                    curTrackFolder = m_iTunes.CurrentTrack.Album + ", " + m_iTunes.CurrentTrack.DiscNumber;
+                                    curTrackInfo = m_iTunes.CurrentTrack.Album + ", " + m_iTunes.CurrentTrack.DiscNumber + ", " + m_iTunes.CurrentTrack.Name;
+                                }
+
+                                Console.WriteLine("Pre : [" + m_strPreTrackFolder + "]");
+                                Console.WriteLine("Cur : [" + curTrackInfo + "]");
 
                                 
                                 
 
-                                bool isLoadSuccess = (m_strPreTrackInfo == curTrackInfo);
+                                bool isSameFolder = (m_strPreTrackFolder == curTrackFolder);
+                                bool isSameTrack = (m_strPreTrackInfo == curTrackInfo);
 
                                 if (iIFileTrack != null)
                                 {
                                     string trackDirectory = System.IO.Path.GetDirectoryName(iIFileTrack.Location);
                                     string trackName = System.IO.Path.GetFileNameWithoutExtension(iIFileTrack.Location);
-                                    Console.WriteLine("GetFileNameWithoutExtension : [" + trackDirectory + "\\" + trackName + "]");
-                                    m_lrcWindow.clear();
-                                    if (m_lrcWindow.load(trackDirectory + "\\" + trackName + ".lrc"))
+
+                                    if (!isSameTrack)
                                     {
-                                        m_lrcWindow.rebuildLyricsUI();
-                                        m_lrcWindow.Show();
-                                        //btnLyric.Visibility = Visibility.Visible;
-                                        btnLyric.IsEnabled = true;
-                                        btnLyric.Opacity = 1;
+                                        Console.WriteLine("GetFileNameWithoutExtension : [" + trackDirectory + "\\" + trackName + "]");
+                                        m_lrcWindow.clear();
+                                        if (m_lrcWindow.load(trackDirectory + "\\" + trackName + ".lrc"))
+                                        {
+                                            m_lrcWindow.rebuildLyricsUI();
+                                            m_lrcWindow.Show();
+                                            //btnLyric.Visibility = Visibility.Visible;
+                                            btnLyric.IsEnabled = true;
+                                            btnLyric.Opacity = 1;
+                                        }
+                                        else if (m_lrcWindow.load(trackDirectory + "\\" + trackName + ".ass"))
+                                        {
+                                            m_lrcWindow.rebuildLyricsUI();
+                                            m_lrcWindow.Show();
+                                            //btnLyric.Visibility = Visibility.Visible;
+                                            btnLyric.IsEnabled = true;
+                                            btnLyric.Opacity = 1;
+                                        }
+                                        else if (m_lrcWindow.load(trackDirectory + "\\" + trackName + ".srt"))
+                                        {
+                                            m_lrcWindow.rebuildLyricsUI();
+                                            m_lrcWindow.Show();
+                                            //btnLyric.Visibility = Visibility.Visible;
+                                            btnLyric.IsEnabled = true;
+                                            btnLyric.Opacity = 1;
+                                        }
+                                        else
+                                        {
+                                            m_lrcWindow.Hide();
+                                            //btnLyric.Visibility = Visibility.Collapsed;
+                                            btnLyric.IsEnabled = false;
+                                            btnLyric.Opacity = 0.3;
+                                        }
                                     }
-                                    else if (m_lrcWindow.load(trackDirectory + "\\" + trackName + ".ass"))
-                                    {
-                                        m_lrcWindow.rebuildLyricsUI();
-                                        m_lrcWindow.Show();
-                                        //btnLyric.Visibility = Visibility.Visible;
-                                        btnLyric.IsEnabled = true;
-                                        btnLyric.Opacity = 1;
-                                    }
-                                    else if (m_lrcWindow.load(trackDirectory + "\\" + trackName + ".srt"))
-                                    {
-                                        m_lrcWindow.rebuildLyricsUI();
-                                        m_lrcWindow.Show();
-                                        //btnLyric.Visibility = Visibility.Visible;
-                                        btnLyric.IsEnabled = true;
-                                        btnLyric.Opacity = 1;
-                                    }
-                                    else
-                                    {
-                                        m_lrcWindow.Hide();
-                                        //btnLyric.Visibility = Visibility.Collapsed;
-                                        btnLyric.IsEnabled = false;
-                                        btnLyric.Opacity = 0.3;
-                                    }
+
 
 
 
                                     string[] defaultArtworkName = new string[] {"folder.jpg", "cover.png", "cover.jpg", "folder.png" };
                                     
                                     string trackCoverFile;
-                                    for (int i = 0; i < defaultArtworkName.Length && !isLoadSuccess; i++)
+                                    for (int i = 0; i < defaultArtworkName.Length && !isSameFolder; i++)
                                     {
                                         trackCoverFile = trackDirectory + "\\" + defaultArtworkName[i];
                                         Console.WriteLine("trackCoverFile " + System.IO.File.Exists(trackCoverFile) + " : " + trackCoverFile);
@@ -545,19 +561,19 @@ namespace iTunesTrackInfo
                                                 imageTrackArtwrok.Source = bitmap;
                                                 imageTrackArtwrok.Opacity = 1;
                                                 imageTrackArtwrok.Visibility = Visibility.Visible;
-                                                isLoadSuccess = true;
+                                                isSameFolder = true;
                                             }
                                             catch (System.SystemException e)//System.NotSupportedException + System.ArgumentException
                                             {
                                                 Console.WriteLine("trackCoverFile SystemException!!" + e.ToString());
-                                                isLoadSuccess = false;
+                                                isSameFolder = false;
                                             }
                                         }
                                     }
                                 }
 
 
-                                if (!isLoadSuccess)
+                                if (!isSameFolder)
                                 {
                                     Console.WriteLine("trackCoverFile try to read from iTunes.");
 
@@ -585,7 +601,7 @@ namespace iTunesTrackInfo
                                                 artworkPath = "";
                                                 break;
                                         }
-                                        if (artworkPath.Length != 0 && m_strPreTrackInfo != curTrackInfo)
+                                        if (artworkPath.Length != 0 && m_strPreTrackFolder != curTrackInfo)
                                         {
                                             try
                                             {
@@ -630,6 +646,7 @@ namespace iTunesTrackInfo
                                     }
                                 }
 
+                                m_strPreTrackFolder = curTrackFolder;
                                 m_strPreTrackInfo = curTrackInfo;
 
                                 TimeSpan time = new TimeSpan(0, 0, m_iTunes.CurrentTrack.Duration);

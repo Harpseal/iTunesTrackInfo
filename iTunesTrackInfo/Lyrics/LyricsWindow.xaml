@@ -2,7 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="LyricsWindow" Height="120" Width="300"
-        AllowsTransparency="True" WindowStyle="None" Background="{x:Null}" ResizeMode="CanResizeWithGrip">
+        AllowsTransparency="True" WindowStyle="None" Background="{x:Null}" ResizeMode="CanResizeWithGrip" Loaded="Window_Loaded">
     <Grid>
         <!--Rectangle>
             <Rectangle.Fill>
@@ -13,7 +13,7 @@
                 </LinearGradientBrush>
             </Rectangle.Fill>
         </Rectangle-->
-        <Rectangle Margin="5,5,5,5" Fill="#6EFFFFFF">
+        <Rectangle Margin="5,5,5,5" Fill="#9EFFFFFF">
             <Rectangle.Effect>
                 <BlurEffect/>
             </Rectangle.Effect>

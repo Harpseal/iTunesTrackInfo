@@ -132,6 +132,7 @@ AppPackages/
 
 # Others
 globalhook/
+temp/
 sql/
 *.Cache
 ClientBin/
