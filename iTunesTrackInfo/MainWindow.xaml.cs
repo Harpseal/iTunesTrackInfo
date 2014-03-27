@@ -60,10 +60,17 @@ namespace iTunesTrackInfo
         bool m_isCtrlDown = false;
         bool m_isAltDown = false;
         bool m_isShiftDown = false;
+
+        bool m_isPlaying = false;
+
         bool m_isKeyPauseResume = false;
+        bool m_isKeyNext = false;
+        bool m_isKeyReloadLyrics = false;
+
         int m_iRatingNew = -1;
         string m_strPreTrackFolder;
         string m_strPreTrackInfo;
+        string m_strCurTrackLocation;
 
         Mutex mutex;
 
@@ -75,6 +82,7 @@ namespace iTunesTrackInfo
             InitializeComponent();
             m_window = this;
             m_lrcWindow = new LyricsWindow();
+            m_lrcWindow.setSmoothScroll(m_refreshInterval);
 
             bool result;
             mutex = new System.Threading.Mutex(true, "iTunesTrackInfo_MainWindow", out result);
@@ -170,6 +178,7 @@ namespace iTunesTrackInfo
             m_lrcWindow.Topmost = true;
             m_strPreTrackFolder = "";
             m_strPreTrackInfo = "";
+            m_strCurTrackLocation = "";
 
 
 
@@ -285,6 +294,9 @@ namespace iTunesTrackInfo
         public void keyhook_KeyDown(object sender, System.Windows.Forms.KeyEventArgs e)
         {
             //MessageBox.Show("KeyDown:" + e.KeyCode);
+            //Console.WriteLine("KeyDown:" + e.KeyCode);
+
+            
 
             if (e.KeyCode == System.Windows.Forms.Keys.LShiftKey || e.KeyCode == System.Windows.Forms.Keys.RShiftKey)
             {
@@ -334,7 +346,55 @@ namespace iTunesTrackInfo
             else if (e.KeyCode == System.Windows.Forms.Keys.Clear)
             {
                 m_isKeyPauseResume = true;
+                m_TickEvent.Set();
                 e.Handled = true;
+
+            }
+            else if (e.KeyCode == System.Windows.Forms.Keys.BrowserFavorites)
+            {
+                m_isKeyNext = true;
+                m_TickEvent.Set();
+                e.Handled = true;
+            }
+            else if (e.KeyCode == System.Windows.Forms.Keys.BrowserHome)
+            {
+                if (m_strCurTrackLocation.Length != 0)
+                {
+                    e.Handled = true;
+                    if (m_isPlaying)
+                        m_isKeyPauseResume = true;
+                    new Thread(delegate()
+                        {
+                            Console.WriteLine("Thread is created!");
+                            ProcessStartInfo startInfo = new ProcessStartInfo();
+                            startInfo.CreateNoWindow = false;
+                            startInfo.UseShellExecute = false;
+                            startInfo.FileName = "D:/My Files/Softwares/_Personal_Program_Files/TTPlayer/TTPlayer.exe";
+                            startInfo.WindowStyle = ProcessWindowStyle.Normal;
+                            startInfo.Arguments = "\"" + m_strCurTrackLocation + "\"";
+                            try
+                            {
+                                using (Process exeProcess = Process.Start(startInfo))
+                                {
+                                    //Console.WriteLine("Start to wait ttplayer!");
+                                    exeProcess.WaitForExit();
+                                    //Console.WriteLine("ttplayer is closed.");
+                                    m_isKeyReloadLyrics = true;
+                                    if (!m_isPlaying)
+                                        m_isKeyPauseResume = true;
+                                    m_TickEvent.Set();
+                                }
+                                
+                            }
+                            catch (Exception)
+                            {
+                                //MessageBox.Show("can't exe TTPlayer!\n" + ee.ToString());
+
+                            }
+                        }).Start();
+
+                    
+                }
 
             }
 
@@ -387,8 +447,55 @@ namespace iTunesTrackInfo
             m_TickEvent.Set();
         }
 
+        bool LoadLyrics(string path)
+        {
+            string trackDirectory = System.IO.Path.GetDirectoryName(path);
+            string trackName = System.IO.Path.GetFileNameWithoutExtension(path);
+
+            Console.WriteLine("GetFileNameWithoutExtension : [" + trackDirectory + "\\" + trackName + "]");
+            m_lrcWindow.clear();
+            if (m_lrcWindow.load(trackDirectory + "\\" + trackName + ".lrc"))
+            {
+                m_lrcWindow.rebuildLyricsUI();
+                m_lrcWindow.Show();
+                //btnLyric.Visibility = Visibility.Visible;
+                btnLyric.IsEnabled = true;
+                btnLyric.Opacity = 1;
+            }
+            else if (m_lrcWindow.load(trackDirectory + "\\" + trackName + ".ass"))
+            {
+                m_lrcWindow.rebuildLyricsUI();
+                m_lrcWindow.Show();
+                //btnLyric.Visibility = Visibility.Visible;
+                btnLyric.IsEnabled = true;
+                btnLyric.Opacity = 1;
+            }
+            else if (m_lrcWindow.load(trackDirectory + "\\" + trackName + ".srt"))
+            {
+                m_lrcWindow.rebuildLyricsUI();
+                m_lrcWindow.Show();
+                //btnLyric.Visibility = Visibility.Visible;
+                btnLyric.IsEnabled = true;
+                btnLyric.Opacity = 1;
+            }
+            else
+            {
+                m_lrcWindow.Hide();
+                //btnLyric.Visibility = Visibility.Collapsed;
+                btnLyric.IsEnabled = false;
+                btnLyric.Opacity = 0.3;
+                return false;
+            }
+            return true;
+        }
+
         void UpdateUI()
         {
+            if (m_iTunes == null)
+            {
+                CloseByDispatcher();
+                return;
+            }
             int iHandle = 0;
             WaitHandle[] waitHandes = new WaitHandle[] { m_TickEvent, m_iTunesEvent, m_CloseEvent };
             try
@@ -408,7 +515,7 @@ namespace iTunesTrackInfo
                                 case ITPlayerState.ITPlayerStatePlaying:
                                     TimeSpan time = new TimeSpan(0, 0, m_iTunes.PlayerPosition);
 
-                                    m_lrcWindow.setSecondPositon((float)time.TotalSeconds, m_refreshInterval);
+                                    m_lrcWindow.setSecondPositon((float)time.TotalSeconds);
 
                                     if (time.Hours != 0)
                                         labelTrackTimeCurrent.Content = time.ToString(@"hh\:mm\:ss");
@@ -431,6 +538,20 @@ namespace iTunesTrackInfo
                                         m_iTunes.Pause();
                                         m_isKeyPauseResume = false;
                                     }
+
+                                    if (m_isKeyNext)
+                                    {
+                                        m_iTunes.NextTrack();
+                                        m_isKeyNext = false;
+                                    }
+
+                                    if (m_isKeyReloadLyrics)
+                                    {
+                                        LoadLyrics(m_strCurTrackLocation);
+                                        m_isKeyReloadLyrics = false;
+                                    }
+
+                                    m_isPlaying = true;
                                     
                                     break;
                                 case ITPlayerState.ITPlayerStateStopped:
@@ -443,6 +564,13 @@ namespace iTunesTrackInfo
                                         m_iTunes.Play();
                                         m_isKeyPauseResume = false;
                                     }
+                                    if (m_isKeyNext)
+                                    {
+                                        m_iTunes.NextTrack();
+                                        m_isKeyNext = false;
+                                    }
+
+                                    m_isPlaying = false;
                                     break;
                                 case ITPlayerState.ITPlayerStateRewind:
                                     labelStatus.Content = "Rewind";
@@ -497,44 +625,46 @@ namespace iTunesTrackInfo
 
                                 if (iIFileTrack != null)
                                 {
-                                    string trackDirectory = System.IO.Path.GetDirectoryName(iIFileTrack.Location);
-                                    string trackName = System.IO.Path.GetFileNameWithoutExtension(iIFileTrack.Location);
+                                    m_strCurTrackLocation = iIFileTrack.Location;
+                                    string trackDirectory = System.IO.Path.GetDirectoryName(m_strCurTrackLocation);
+                                    string trackName = System.IO.Path.GetFileNameWithoutExtension(m_strCurTrackLocation);
 
                                     if (!isSameTrack)
                                     {
-                                        Console.WriteLine("GetFileNameWithoutExtension : [" + trackDirectory + "\\" + trackName + "]");
-                                        m_lrcWindow.clear();
-                                        if (m_lrcWindow.load(trackDirectory + "\\" + trackName + ".lrc"))
-                                        {
-                                            m_lrcWindow.rebuildLyricsUI();
-                                            m_lrcWindow.Show();
-                                            //btnLyric.Visibility = Visibility.Visible;
-                                            btnLyric.IsEnabled = true;
-                                            btnLyric.Opacity = 1;
-                                        }
-                                        else if (m_lrcWindow.load(trackDirectory + "\\" + trackName + ".ass"))
-                                        {
-                                            m_lrcWindow.rebuildLyricsUI();
-                                            m_lrcWindow.Show();
-                                            //btnLyric.Visibility = Visibility.Visible;
-                                            btnLyric.IsEnabled = true;
-                                            btnLyric.Opacity = 1;
-                                        }
-                                        else if (m_lrcWindow.load(trackDirectory + "\\" + trackName + ".srt"))
-                                        {
-                                            m_lrcWindow.rebuildLyricsUI();
-                                            m_lrcWindow.Show();
-                                            //btnLyric.Visibility = Visibility.Visible;
-                                            btnLyric.IsEnabled = true;
-                                            btnLyric.Opacity = 1;
-                                        }
-                                        else
-                                        {
-                                            m_lrcWindow.Hide();
-                                            //btnLyric.Visibility = Visibility.Collapsed;
-                                            btnLyric.IsEnabled = false;
-                                            btnLyric.Opacity = 0.3;
-                                        }
+                                        LoadLyrics(m_strCurTrackLocation);
+                                        //Console.WriteLine("GetFileNameWithoutExtension : [" + trackDirectory + "\\" + trackName + "]");
+                                        //m_lrcWindow.clear();
+                                        //if (m_lrcWindow.load(trackDirectory + "\\" + trackName + ".lrc"))
+                                        //{
+                                        //    m_lrcWindow.rebuildLyricsUI();
+                                        //    m_lrcWindow.Show();
+                                        //    //btnLyric.Visibility = Visibility.Visible;
+                                        //    btnLyric.IsEnabled = true;
+                                        //    btnLyric.Opacity = 1;
+                                        //}
+                                        //else if (m_lrcWindow.load(trackDirectory + "\\" + trackName + ".ass"))
+                                        //{
+                                        //    m_lrcWindow.rebuildLyricsUI();
+                                        //    m_lrcWindow.Show();
+                                        //    //btnLyric.Visibility = Visibility.Visible;
+                                        //    btnLyric.IsEnabled = true;
+                                        //    btnLyric.Opacity = 1;
+                                        //}
+                                        //else if (m_lrcWindow.load(trackDirectory + "\\" + trackName + ".srt"))
+                                        //{
+                                        //    m_lrcWindow.rebuildLyricsUI();
+                                        //    m_lrcWindow.Show();
+                                        //    //btnLyric.Visibility = Visibility.Visible;
+                                        //    btnLyric.IsEnabled = true;
+                                        //    btnLyric.Opacity = 1;
+                                        //}
+                                        //else
+                                        //{
+                                        //    m_lrcWindow.Hide();
+                                        //    //btnLyric.Visibility = Visibility.Collapsed;
+                                        //    btnLyric.IsEnabled = false;
+                                        //    btnLyric.Opacity = 0.3;
+                                        //}
                                     }
 
 
@@ -683,8 +813,26 @@ namespace iTunesTrackInfo
             }
             catch (System.Runtime.InteropServices.COMException come)
             {
+                if (m_iTunes != null)
+                {
+                    m_iTunes.OnPlayerPlayEvent -= itunesPlayerPlayEvent;
+                    m_iTunes.OnPlayerStopEvent -= itunesPlayerStopEvent;
+                    m_iTunes.OnDatabaseChangedEvent -= itunesDatabaseChangedEvent;
+                    m_iTunes.OnQuittingEvent -= itunesQuittingEvent;
+
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(m_iTunes);
+                    m_iTunes = null;
+                }
+
                 m_window.CloseByDispatcher();
             }
+            catch (Exception)
+            {
+                if (m_keyhook!=null)
+                    m_keyhook.Stop();
+                m_keyhook = null;
+            }
+
             Debug.WriteLine("UpdateUI Closing");
 
         }
@@ -767,7 +915,9 @@ namespace iTunesTrackInfo
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            
+            if (m_keyhook!=null)
+                m_keyhook.Stop();
+            m_keyhook = null;
 
             m_CloseEvent.Set();
 

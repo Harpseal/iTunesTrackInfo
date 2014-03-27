@@ -17,12 +17,16 @@ namespace iTunesLyrics
         public float fTimeStampStart { get; set; }
         public float fTimeStampEnd { get; set; }
         public string strLyrics { get; set; }
+        public ushort usIndex { get; set; }
+        public ushort usGroup { get; set; }
 
         public LyricsItem(float start,float end,string lrcString)
         {
             fTimeStampStart = start;
             fTimeStampEnd = end;
             strLyrics = lrcString;
+            usIndex = 0;
+            usGroup = 0;
         }
 
         public override string ToString()
@@ -59,6 +63,10 @@ namespace iTunesLyrics
         private Regex m_regexSRT_Time = null;
         private LyricsItem m_srtTempItem = null;
         private List<string> m_srtLyricsPool;
+
+        private Encoding m_curEncoding = Encoding.Default;
+
+        public Encoding getEncoding() { return m_curEncoding; }
 
         private void initParser(LyricsType type)
         {
@@ -262,6 +270,12 @@ namespace iTunesLyrics
                                     else
                                         m_srtTempItem.strLyrics += Environment.NewLine + m_srtLyricsPool[l];
                                 }
+                                m_srtTempItem.usIndex = (ushort)list.Count;
+                                if (m_listLyricContainer == null)
+                                    m_srtTempItem.usGroup = 0;
+                                else
+                                    m_srtTempItem.usGroup = (ushort)m_listLyricContainer.Count;
+
                                 list.Add(m_srtTempItem);
                                 m_srtTempItem = null;
                             }
@@ -341,9 +355,21 @@ namespace iTunesLyrics
                 byte[] readBuffer = new byte[4096];
                 int bytesRead;
                 bytesRead = lrcStream.Read(readBuffer, 0, readBuffer.Length);
-                Encoding enc = EncodingTools.DetectInputCodepage(readBuffer);
+                Encoding[] encs = EncodingTools.DetectInputCodepages(readBuffer,10);
+                Encoding enc;
+
+                //for (int i=0;i<encs.Length;i++)
+                //{
+                //    Console.WriteLine(i + encs[i].EncodingName);
+                //}
+                if (encs.Length == 0)
+                    enc = Encoding.Default;
+                else
+                    enc = encs[0];
 
                 System.Console.WriteLine(enc.EncodingName + " default : " + Encoding.Default.EncodingName);
+
+                m_curEncoding = enc;
 
                 lrcStream.Seek(0, SeekOrigin.Begin);
 
@@ -427,7 +453,30 @@ namespace iTunesLyrics
                     lrcList[i].fTimeStampEnd = lrcList[i + 1].fTimeStampStart;
                 else if (lrcList[i + 1].fTimeStampStart < lrcList[i].fTimeStampEnd)
                 {
-                    lrcList[i].strLyrics += Environment.NewLine + lrcList[i + 1].strLyrics;
+                    //if (Math.Abs(lrcList[i].fTimeStampStart - lrcList[i+1].fTimeStampStart) < 2)
+                    //{
+                    //    if (lrcList[i].usGroup == lrcList[i+1].usGroup)
+                    //    {
+                    //        if (lrcList[i].usIndex < lrcList[i+1].usIndex)
+                    //            lrcList[i].strLyrics += Environment.NewLine + lrcList[i + 1].strLyrics;
+                    //        else
+                    //            lrcList[i].strLyrics = lrcList[i + 1].strLyrics + Environment.NewLine + lrcList[i].strLyrics;
+                    //    }
+                    //    else 
+                    //    {
+                    //        if (lrcList[i].usGroup < lrcList[i + 1].usGroup)
+                    //            lrcList[i].strLyrics += Environment.NewLine + lrcList[i + 1].strLyrics;
+                    //        else
+                    //            lrcList[i].strLyrics = lrcList[i + 1].strLyrics + Environment.NewLine + lrcList[i].strLyrics;
+                    //    }
+                    //}
+                    //else 
+                        if (lrcList[i].fTimeStampStart < lrcList[i + 1].fTimeStampStart)
+                        lrcList[i].strLyrics += Environment.NewLine + lrcList[i + 1].strLyrics;     
+                    else
+                        lrcList[i].strLyrics = lrcList[i + 1].strLyrics + Environment.NewLine + lrcList[i].strLyrics;
+
+
                     if (lrcList[i].fTimeStampEnd < lrcList[i + 1].fTimeStampEnd)
                         lrcList[i].fTimeStampEnd = lrcList[i + 1].fTimeStampEnd;
                     lrcList.RemoveAt(i + 1);

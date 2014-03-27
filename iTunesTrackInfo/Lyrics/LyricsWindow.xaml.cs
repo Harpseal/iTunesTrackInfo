@@ -46,8 +46,10 @@ namespace iTunesLyrics
 
         int m_iPreHitLyrics;
         int m_iAniHitLyrics;
-        //Storyboard m_sbAniTextBGIn;
-        //Storyboard m_sbAniTextBGOut;
+
+        Storyboard m_sbAniFadeOut;
+        Storyboard m_sbAniFadeIn;
+
         ColorAnimation m_caTextBGIn;
         ColorAnimation m_caTextBGOut;
 
@@ -59,6 +61,8 @@ namespace iTunesLyrics
 
         Color m_colorBGIn;
         Color m_colorBGOut;
+
+        int m_iSmoothScrollInterval;
         
 
         public LyricsWindow()
@@ -103,6 +107,24 @@ namespace iTunesLyrics
             m_caTextBGOut.To = m_colorBGOut;
 
 
+            m_sbAniFadeOut = new Storyboard();
+            DoubleAnimation daFadeOut = new DoubleAnimation();
+            daFadeOut.Duration = new TimeSpan(0, 0, 0, 0, 200);
+            daFadeOut.To = 0.0;
+
+            m_sbAniFadeOut.Children.Add(daFadeOut);
+            Storyboard.SetTargetProperty(daFadeOut, new PropertyPath(UIElement.OpacityProperty));
+
+            m_sbAniFadeIn = new Storyboard();
+            DoubleAnimation daFadeIn = new DoubleAnimation();
+            daFadeIn.Duration = new TimeSpan(0, 0, 0, 0, 200);
+            daFadeIn.From = 0.0;
+            daFadeIn.To = 1.0;
+
+            m_sbAniFadeIn.Children.Add(daFadeIn);
+            Storyboard.SetTargetProperty(daFadeIn, new PropertyPath(UIElement.OpacityProperty));
+
+
             //m_sbAniTextBGIn = new Storyboard();
 
 
@@ -117,11 +139,22 @@ namespace iTunesLyrics
 
             m_iPreHitLyrics = -1;
             m_iAniHitLyrics = -1;
+            m_iSmoothScrollInterval = -1;
 
-
-
-            //.VerticalOffsetProperty
+            labelEncoding.Opacity = 0;
+            spWindowButton.Opacity = 0;
             
+        }
+
+        public Encoding getEncoding()
+        {
+            return m_lrcReader.getEncoding();
+        }
+
+        public void setSmoothScroll(int iInterval)//millisecond, set Interval==-1 to disable the smooth scrolling.
+        {
+            m_iSmoothScrollInterval = iInterval;
+            m_daSmoothScroll.Duration = new TimeSpan(0, 0, 0, 0, m_iSmoothScrollInterval);
         }
 
         public void rebuildLyricsUI()
@@ -175,7 +208,12 @@ namespace iTunesLyrics
 
         public bool load(string path)
         {
-            return m_lrcReader.load(path);
+            if (m_lrcReader.load(path))
+            {
+                labelEncoding.Content = m_lrcReader.getEncoding().EncodingName;
+                return true;
+            }
+            return false;
         }
 
         public bool mergeAll()
@@ -193,7 +231,7 @@ namespace iTunesLyrics
             spLyricsMain.Children.Clear();
         }
 
-        public void setSecondPositon(float second,int aniMSec=-1)
+        public void setSecondPositon(float second)
         {
             int idx = 0, idxAni = 0 ;
             float ratio = 0;
@@ -202,39 +240,73 @@ namespace iTunesLyrics
 
             if (idx>=0 && idx<spLyricsMain.Children.Count)
             {
+                TextBox tboxPre;
                 TextBox tbox = spLyricsMain.Children[idx] as TextBox;
                 Point offset = tbox.TranslatePoint(new Point(0, 0), svLyricsScroll);
 
-                if (idx != m_iPreHitLyrics)
+                if (isHit)
                 {
-                    tbox.Foreground.BeginAnimation(SolidColorBrush.ColorProperty, m_caTextColorIn);
-                    tbox.Background.BeginAnimation(SolidColorBrush.ColorProperty, m_caTextBGIn);
-                    //m_sbAniTextColorIn.Begin(tbox.Foreground);
-                    if (m_iPreHitLyrics >= 0 && m_iPreHitLyrics < spLyricsMain.Children.Count)
+                    if (m_iPreHitLyrics != idx)
                     {
-                        (spLyricsMain.Children[m_iPreHitLyrics] as TextBox).Foreground.BeginAnimation(SolidColorBrush.ColorProperty, m_caTextColorOut);
-                        (spLyricsMain.Children[m_iPreHitLyrics] as TextBox).Background.BeginAnimation(SolidColorBrush.ColorProperty, m_caTextBGOut);
+                        if (tbox.Text.Length!=0)
+                        {
+                            tbox.Foreground.BeginAnimation(SolidColorBrush.ColorProperty, m_caTextColorIn);
+                            tbox.Background.BeginAnimation(SolidColorBrush.ColorProperty, m_caTextBGIn);
+                        }
+
+                        if (m_iPreHitLyrics >= 0 && m_iPreHitLyrics < spLyricsMain.Children.Count)
+                        {
+                            tboxPre = spLyricsMain.Children[m_iPreHitLyrics] as TextBox;
+                            tboxPre.Foreground.BeginAnimation(SolidColorBrush.ColorProperty, m_caTextColorOut);
+                            tboxPre.Background.BeginAnimation(SolidColorBrush.ColorProperty, m_caTextBGOut);
+                        }
                     }
-                        //m_sbAniTextColorOut.Begin((spLyricsMain.Children[m_iPreHitLyrics] as TextBox).Foreground);
+                    m_iPreHitLyrics = idx;
                 }
-                else if (!isHit)
+                else 
                 {
-                    if (m_iPreHitLyrics >= 0 && m_iPreHitLyrics < spLyricsMain.Children.Count)
+                    tbox.Foreground.BeginAnimation(SolidColorBrush.ColorProperty, m_caTextColorOut);
+                    tbox.Background.BeginAnimation(SolidColorBrush.ColorProperty, m_caTextBGOut);
+                    if (m_iPreHitLyrics != idx && m_iPreHitLyrics >= 0 && m_iPreHitLyrics < spLyricsMain.Children.Count)
                     {
-                        (spLyricsMain.Children[m_iPreHitLyrics] as TextBox).Foreground.BeginAnimation(SolidColorBrush.ColorProperty, m_caTextColorOut);
-                        (spLyricsMain.Children[m_iPreHitLyrics] as TextBox).Background.BeginAnimation(SolidColorBrush.ColorProperty, m_caTextBGOut);
+                        tboxPre = spLyricsMain.Children[m_iPreHitLyrics] as TextBox;
+                        tboxPre.Foreground.BeginAnimation(SolidColorBrush.ColorProperty, m_caTextColorOut);
+                        tboxPre.Background.BeginAnimation(SolidColorBrush.ColorProperty, m_caTextBGOut);
                     }
+                    
                 }
 
+
+                //if (idx != m_iPreHitLyrics)
+                //{
+                //    tbox.Foreground.BeginAnimation(SolidColorBrush.ColorProperty, m_caTextColorIn);
+                //    tbox.Background.BeginAnimation(SolidColorBrush.ColorProperty, m_caTextBGIn);
+                //    //m_sbAniTextColorIn.Begin(tbox.Foreground);
+                //    if (m_iPreHitLyrics >= 0 && m_iPreHitLyrics < spLyricsMain.Children.Count)
+                //    {
+                //        (spLyricsMain.Children[m_iPreHitLyrics] as TextBox).Foreground.BeginAnimation(SolidColorBrush.ColorProperty, m_caTextColorOut);
+                //        (spLyricsMain.Children[m_iPreHitLyrics] as TextBox).Background.BeginAnimation(SolidColorBrush.ColorProperty, m_caTextBGOut);
+                //    }
+                //        //m_sbAniTextColorOut.Begin((spLyricsMain.Children[m_iPreHitLyrics] as TextBox).Foreground);
+                //}
+                //else if (!isHit)
+                //{
+                //    if (m_iPreHitLyrics >= 0 && m_iPreHitLyrics < spLyricsMain.Children.Count)
+                //    {
+                //        (spLyricsMain.Children[m_iPreHitLyrics] as TextBox).Foreground.BeginAnimation(SolidColorBrush.ColorProperty, m_caTextColorOut);
+                //        (spLyricsMain.Children[m_iPreHitLyrics] as TextBox).Background.BeginAnimation(SolidColorBrush.ColorProperty, m_caTextBGOut);
+                //    }
+                //}
+
                 //System.Console.WriteLine("lyrics : " + m_iLyricsCount + " (" + offset.X + "," + (offset.Y + svLyricsScroll.VerticalOffset) + ")  " + svLyricsScroll.VerticalOffset + " " + svLyricsScroll.ScrollableHeight);
-               
-                if (aniMSec > 0)
+
+                if (m_iSmoothScrollInterval > 0)
                 {
-                    isHitAni = getLrcRatioBySecond(second + (float)aniMSec / 1000.0f, ref idxAni, ref ratio);
+                    isHitAni = getLrcRatioBySecond(second + (float)m_iSmoothScrollInterval / 1000.0f, ref idxAni, ref ratio);
 
                     tbox = spLyricsMain.Children[idxAni] as TextBox;
                     offset = tbox.TranslatePoint(new Point(0, 0), svLyricsScroll);
-                    m_daSmoothScroll.Duration = new TimeSpan(0, 0, 0, 0, aniMSec);
+                    
                     //m_daSmoothScroll.From = svLyricsScroll.VerticalOffset;
                     m_daSmoothScroll.To = Math.Max((offset.Y + svLyricsScroll.VerticalOffset) - svLyricsScroll.ViewportHeight / 2 + tbox.ActualHeight * ratio, 0);
                     m_sbAniSmoothScroll.Begin();
@@ -243,8 +315,12 @@ namespace iTunesLyrics
                     {
                         if (idxAni != m_iAniHitLyrics)
                         {
-                            tbox.Foreground.BeginAnimation(SolidColorBrush.ColorProperty, m_caTextColorIn);
-                            tbox.Background.BeginAnimation(SolidColorBrush.ColorProperty, m_caTextBGIn);
+
+                            if (tbox.Text.Length != 0)
+                            {
+                                tbox.Foreground.BeginAnimation(SolidColorBrush.ColorProperty, m_caTextColorIn);
+                                tbox.Background.BeginAnimation(SolidColorBrush.ColorProperty, m_caTextBGIn);
+                            }
 
                             if (m_iAniHitLyrics != m_iPreHitLyrics && m_iAniHitLyrics >= 0 && m_iAniHitLyrics < spLyricsMain.Children.Count)
                             {
@@ -258,7 +334,7 @@ namespace iTunesLyrics
                 else
                     svLyricsScroll.ScrollToVerticalOffset(Math.Max((offset.Y + svLyricsScroll.VerticalOffset) - svLyricsScroll.ViewportHeight / 2 + tbox.ActualHeight * ratio, 0));
 
-                m_iPreHitLyrics = idx;
+                
                 
             }
 
@@ -361,6 +437,19 @@ namespace iTunesLyrics
 
             Int32 windowStyle = GetWindowLongPtr(hwnd, GWL_STYLE);
             SetWindowLongPtr(hwnd, GWL_STYLE, windowStyle & ~WS_MAXIMIZEBOX);
+        }
+
+        private void Window_MouseEnter(object sender, MouseEventArgs e)
+        {
+            m_sbAniFadeIn.Begin(labelEncoding);
+            m_sbAniFadeIn.Begin(spWindowButton);
+
+        }
+
+        private void Window_MouseLeave(object sender, MouseEventArgs e)
+        {
+            m_sbAniFadeOut.Begin(labelEncoding);
+            m_sbAniFadeOut.Begin(spWindowButton);
         }
 
     }
