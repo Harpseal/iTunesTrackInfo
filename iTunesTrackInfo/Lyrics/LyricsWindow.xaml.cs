@@ -63,7 +63,8 @@ namespace iTunesLyrics
         Color m_colorBGOut;
 
         int m_iSmoothScrollInterval;
-        
+
+        float m_fLyricsShift;
 
         public LyricsWindow()
         {
@@ -141,9 +142,10 @@ namespace iTunesLyrics
             m_iAniHitLyrics = -1;
             m_iSmoothScrollInterval = -1;
 
-            labelEncoding.Opacity = 0;
+            spLyricsControl.Opacity = 0;
             spWindowButton.Opacity = 0;
-            
+
+            m_fLyricsShift = 0;
         }
 
         public Encoding getEncoding()
@@ -211,6 +213,7 @@ namespace iTunesLyrics
             if (m_lrcReader.load(path))
             {
                 labelEncoding.Content = m_lrcReader.getEncoding().EncodingName;
+                m_fLyricsShift = 0;
                 return true;
             }
             return false;
@@ -223,7 +226,9 @@ namespace iTunesLyrics
 
         public void clear()
         {
+            m_sbAniSmoothScroll.Stop();
             svLyricsScroll.ScrollToVerticalOffset(0);
+
             m_iPreHitLyrics = -1;
             m_iAniHitLyrics = -1;
 
@@ -355,6 +360,7 @@ namespace iTunesLyrics
 
         public bool getLrcRatioBySecond(float second,ref int index,ref float ratio)
         {
+            second += m_fLyricsShift;
             if (m_lrcReader.m_listLyricMain == null)
             {
                 index = 0;
@@ -441,15 +447,27 @@ namespace iTunesLyrics
 
         private void Window_MouseEnter(object sender, MouseEventArgs e)
         {
-            m_sbAniFadeIn.Begin(labelEncoding);
+            m_sbAniFadeIn.Begin(spLyricsControl);
             m_sbAniFadeIn.Begin(spWindowButton);
 
         }
 
         private void Window_MouseLeave(object sender, MouseEventArgs e)
         {
-            m_sbAniFadeOut.Begin(labelEncoding);
+            m_sbAniFadeOut.Begin(spLyricsControl);
             m_sbAniFadeOut.Begin(spWindowButton);
+        }
+
+        private void btnLyricsShiftAdd_Click(object sender, RoutedEventArgs e)
+        {
+            m_fLyricsShift += 0.1f;
+            labelLyricsShift.Content = String.Format("{0:+0.00;-0.00;+0.00} s", m_fLyricsShift);
+        }
+
+        private void btnLyricsShiftSub_Click(object sender, RoutedEventArgs e)
+        {
+            m_fLyricsShift -= 0.1f;
+            labelLyricsShift.Content = String.Format("{0:+0.00;-0.00;+0.00} s", m_fLyricsShift);
         }
 
     }

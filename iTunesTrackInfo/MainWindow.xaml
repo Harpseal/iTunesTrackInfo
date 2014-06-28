@@ -97,13 +97,13 @@
                           Color="Black"/>
                     </Label.Effect>
                 </Label>
-                <Label x:Name="labelRating" Content="Rating"  FontFamily="YaHei Segoe UI" Margin="0,-10,0,0" FontSize="16" Foreground="Yellow">
-                    <Label.Effect>
-                        <DropShadowEffect BlurRadius="10" ShadowDepth="0" Opacity="1" 
-                          Color="Black"/>
-                    </Label.Effect>
-                </Label>
-                <Label x:Name="labelStatus" Content="Status"  FontFamily="YaHei Segoe UI" Margin="0,-10,0,0" FontSize="16" Foreground="#FFC0C0C0">
+                <Grid>
+                    <Label x:Name="labelRating_BG" Content="☆☆☆☆☆"  FontFamily="YaHei Mono" Margin="5,-6,0,5" FontSize="16" Foreground="Black" HorizontalAlignment="Left" VerticalAlignment="Center" Padding="0">
+                    </Label>
+                    <Label x:Name="labelRating" Content="★★★★★"  FontFamily="YaHei Mono" Margin="5,-6,0,5" FontSize="16" Foreground="Yellow" HorizontalAlignment="Left" VerticalAlignment="Center" Padding="0">
+                    </Label>
+                </Grid>
+                <Label x:Name="labelStatus" Content="Status"  FontFamily="YaHei Segoe UI" Margin="0,-10,0,0" FontSize="16" Foreground="#FFC0C0C0" HorizontalAlignment="Left" VerticalAlignment="Center">
                     <Label.Effect>
                         <DropShadowEffect BlurRadius="10" ShadowDepth="0" Opacity="1" 
                           Color="Black"/>

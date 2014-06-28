@@ -289,6 +289,14 @@ namespace iTunesTrackInfo
             {
                 //MessageBox.Show("[" + TomatoTimerWPF.Properties.Settings.Default.WindowRestoreBounds + "]");
             }
+            //labelRating.Clip = new RectangleGeometry(new Rect(0, 0, Math.Max(0, labelRating_BG.ActualWidth * 90 / 100 - 1), labelRating_BG.ActualHeight));
+            //FormattedText ftext = new FormattedText(labelRating.Content.ToString(),
+            //    System.Globalization.CultureInfo.CurrentUICulture,
+            //    FlowDirection.LeftToRight,
+            //    new Typeface(labelRating.FontFamily, labelRating.FontStyle, labelRating.FontWeight, labelRating.FontStretch),
+            //    labelRating.FontSize,
+            //    Brushes.Black);
+            //labelRating.Clip = new RectangleGeometry(new Rect(0, 0, ftext.Width*0.8, ftext.Height));
         }
 
         public void keyhook_KeyDown(object sender, System.Windows.Forms.KeyEventArgs e)
@@ -358,6 +366,7 @@ namespace iTunesTrackInfo
             }
             else if (e.KeyCode == System.Windows.Forms.Keys.BrowserHome)
             {
+                m_isKeyReloadLyrics = true;
                 if (m_strCurTrackLocation.Length != 0)
                 {
                     e.Handled = true;
@@ -379,7 +388,7 @@ namespace iTunesTrackInfo
                                     //Console.WriteLine("Start to wait ttplayer!");
                                     exeProcess.WaitForExit();
                                     //Console.WriteLine("ttplayer is closed.");
-                                    m_isKeyReloadLyrics = true;
+                                    
                                     if (!m_isPlaying)
                                         m_isKeyPauseResume = true;
                                     m_TickEvent.Set();
@@ -785,19 +794,22 @@ namespace iTunesTrackInfo
                                 else
                                     labelTrackTimeTotal.Content = time.ToString(@"mm\:ss");
 
-                                int rating = m_iTunes.CurrentTrack.Rating;
-                                labelRating.Content = "";
-                                for (int r = 0; r < 5; r++)
-                                {
-                                    if (rating >= 20)
-                                        labelRating.Content += "★";
-                                    else if (rating >= 10)
-                                        labelRating.Content += "½";
-                                    else
-                                        labelRating.Content += "☆";
-                                    rating -= 20;
-
-                                }
+                                //labelRating_BG.Visibility = Visibility.Hidden;
+                                //labelRating.Content = "";
+                                labelRating.Clip = new RectangleGeometry(new Rect(0, 0, Math.Max(0, labelRating_BG.ActualWidth * (double)m_iTunes.CurrentTrack.Rating/100-0.5), labelRating_BG.ActualHeight));
+                                //System.Console.WriteLine("rating " + m_iTunes.CurrentTrack.Rating + "  " + (double)m_iTunes.CurrentTrack.Rating / 100 + "  " + labelRating_BG.ActualWidth * (double)m_iTunes.CurrentTrack.Rating / 100);
+                                //System.Console.WriteLine("ActualWidth " + labelRating_BG.ActualWidth + " " + labelRating.ActualWidth);
+                                //int rating = m_iTunes.CurrentTrack.Rating;
+                                //for (int r = 0; r < 5; r++)
+                                //{
+                                //    if (rating >= 20)
+                                //        labelRating.Content += "★";
+                                //    else if (rating >= 10)
+                                //        labelRating.Content += "½";
+                                //    else
+                                //        labelRating.Content += "☆";
+                                //    rating -= 20;
+                                //}
                             }
                             catch (System.NullReferenceException)
                             {

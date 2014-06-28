@@ -153,6 +153,10 @@
   <ItemGroup>
     <Resource Include="Resources\10-device-access-storage.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\5-content-add.png" />
+    <Resource Include="Resources\5-content-sub.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
