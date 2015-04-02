@@ -142,8 +142,7 @@ namespace iTunesTrackInfo
 
             m_trayNotifyIcon.ContextMenu = new System.Windows.Forms.ContextMenu();
 
-            System.Windows.Forms.MenuItem menu;
-            menu = new System.Windows.Forms.MenuItem("Show/Hide taskbar", (s, e) => {
+            System.Windows.Forms.MenuItem menu = new System.Windows.Forms.MenuItem("Show/Hide taskbar", (s, e) => {
                 System.Windows.Forms.MenuItem m = (System.Windows.Forms.MenuItem)s;
                 this.ShowInTaskbar = !this.ShowInTaskbar;
                 m.Checked = this.ShowInTaskbar;
@@ -155,46 +154,14 @@ namespace iTunesTrackInfo
             menu.Checked = this.ShowInTaskbar;
 
             m_trayNotifyIcon.ContextMenu.MenuItems.Add(menu);
-
-            menu = new System.Windows.Forms.MenuItem("Show/Hide window", (s, e) =>
-            {
-                System.Windows.Forms.MenuItem m = (System.Windows.Forms.MenuItem)s;
-                if (WindowState == WindowState.Normal)
-                {
-                    WindowState = WindowState.Minimized;
-                    m.Text = "Show window";
-                    m.Checked = false;
-                }
+            m_trayNotifyIcon.ContextMenu.MenuItems.Add(new System.Windows.Forms.MenuItem("Show/Hide windows", (s,e)=>{
+                if (Visibility == Visibility.Visible)
+                    m_window.Visibility = Visibility.Hidden;
                 else
-                {
-                    WindowState = WindowState.Normal;
-                    m.Text = "Hide window";
-                    m.Checked = true;
-                }
+                    m_window.Visibility = Visibility.Visible;
             });
-            menu.Checked = true;
-            m_trayNotifyIcon.ContextMenu.MenuItems.Add(menu);
+            m_trayNotifyIcon.ContextMenu.MenuItems.Add(new System.Windows.Forms.MenuItem("Enable/Disable auto hide"));
 
-            menu = new System.Windows.Forms.MenuItem("Enable/Disable auto hide", (s, e) =>
-            {
-                System.Windows.Forms.MenuItem m = (System.Windows.Forms.MenuItem)s;
-                m_window.m_isAutoHideMouseOver = !m_window.m_isAutoHideMouseOver;
-
-                m.Checked = m_window.m_isAutoHideMouseOver;
-                if (m_window.m_isAutoHideMouseOver)
-                    m.Text = "Disable auto hide";
-                else
-                    m.Text = "Enable auto hide";
-            });
-            menu.Checked = this.m_isAutoHideMouseOver;
-            m_trayNotifyIcon.ContextMenu.MenuItems.Add(menu);
-
-            m_trayNotifyIcon.ContextMenu.MenuItems.Add("-");
-
-            m_trayNotifyIcon.ContextMenu.MenuItems.Add(new System.Windows.Forms.MenuItem("Exit", (s, e) =>
-            {
-                m_window.Close();
-            }));
 
 
             m_trayNotifyIcon.MouseClick +=

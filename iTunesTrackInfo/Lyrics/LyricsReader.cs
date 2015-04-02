@@ -136,6 +136,7 @@ namespace iTunesLyrics
                                     case 3:
                                         timeStart += float.Parse(times[t]) / 100.0f;
                                         res = new LyricsItem(timeStart, -1, matches[2]);
+                                        res.usIndex = (ushort)list.Count;
                                         list.Add(res);
                                         break;
                                     default:
@@ -226,6 +227,7 @@ namespace iTunesLyrics
                                         res = new LyricsItem(float.Parse(timesStart[0]) * 3600 + float.Parse(timesStart[1]) * 60 + float.Parse(timesStart[2]) + float.Parse(timesStart[3]) / 100,
                                             (m_assIdxTimeEnd != -1) ? float.Parse(timesEnd[0]) * 3600 + float.Parse(timesEnd[1]) * 60 + float.Parse(timesEnd[2]) + float.Parse(timesEnd[3]) / 100 : -1,
                                             label[m_assIdxText]);
+                                        res.usIndex = (ushort)list.Count;
                                         list.Add(res);
                                     }
                                 }
@@ -440,6 +442,8 @@ namespace iTunesLyrics
                 Marshal.FinalReleaseComObject(multilang2);
             }
 
+            if (m_listLyricMain == null || m_listLyricMain.Count == 0)
+                res = false;
             return res;
 
         }
@@ -471,7 +475,19 @@ namespace iTunesLyrics
                     //    }
                     //}
                     //else 
-                        if (lrcList[i].fTimeStampStart < lrcList[i + 1].fTimeStampStart)
+                    float value0, value1;
+                    if (lrcList[i].usIndex != lrcList[i + 1].usIndex)
+                    {
+                        value0 = lrcList[i].usIndex;
+                        value1 = lrcList[i+1].usIndex;
+                    }
+                    else
+                    {
+                        value0 = lrcList[i].fTimeStampStart;
+                        value1 = lrcList[i + 1].fTimeStampStart;
+                    }
+
+                    if (value0 < value1)
                         lrcList[i].strLyrics += Environment.NewLine + lrcList[i + 1].strLyrics;     
                     else
                         lrcList[i].strLyrics = lrcList[i + 1].strLyrics + Environment.NewLine + lrcList[i].strLyrics;

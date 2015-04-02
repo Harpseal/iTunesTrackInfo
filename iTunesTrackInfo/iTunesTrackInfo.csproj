@@ -43,6 +43,9 @@
     <Reference Include="EncodingTools">
       <HintPath>Lyrics\EncodingTools.dll</HintPath>
     </Reference>
+    <Reference Include="policy.2.0.taglib-sharp">
+      <HintPath>..\packages\taglib.2.1.0.0\lib\policy.2.0.taglib-sharp.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
@@ -54,6 +57,9 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Xaml">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="taglib-sharp">
+      <HintPath>..\packages\taglib.2.1.0.0\lib\taglib-sharp.dll</HintPath>
     </Reference>
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
@@ -68,6 +74,7 @@
     <Compile Include="Lyrics\LyricsReader.cs" />
     <Compile Include="Lyrics\LyricsWindow.xaml.cs" />
     <Compile Include="Lyrics\ScrollAnimationBehavior.cs" />
+    <Compile Include="MusicPlayer.cs" />
     <Compile Include="UserActivityHook.cs" />
     <Page Include="Lyrics\LyricsWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -104,6 +111,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -156,6 +164,27 @@
   <ItemGroup>
     <Resource Include="Resources\5-content-add.png" />
     <Resource Include="Resources\5-content-sub.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\3-rating-half-important.png" />
+    <Resource Include="Resources\3-rating-important.png" />
+    <Resource Include="Resources\3-rating-not-important.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\star_0.png" />
+    <Resource Include="Resources\star_10.png" />
+    <Resource Include="Resources\star_100.png" />
+    <Resource Include="Resources\star_20.png" />
+    <Resource Include="Resources\star_30.png" />
+    <Resource Include="Resources\star_40.png" />
+    <Resource Include="Resources\star_50.png" />
+    <Resource Include="Resources\star_60.png" />
+    <Resource Include="Resources\star_70.png" />
+    <Resource Include="Resources\star_80.png" />
+    <Resource Include="Resources\star_90.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\12-hardware-keyboard.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

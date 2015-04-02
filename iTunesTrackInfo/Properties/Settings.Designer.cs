@@ -46,5 +46,41 @@ namespace iTunesTrackInfo.Properties {
                 this["LyricsRestoreBounds"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool ShowInTaskbarMain {
+            get {
+                return ((bool)(this["ShowInTaskbarMain"]));
+            }
+            set {
+                this["ShowInTaskbarMain"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool KeyHook {
+            get {
+                return ((bool)(this["KeyHook"]));
+            }
+            set {
+                this["KeyHook"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool AutoHideMouseOver {
+            get {
+                return ((bool)(this["AutoHideMouseOver"]));
+            }
+            set {
+                this["AutoHideMouseOver"] = value;
+            }
+        }
     }
 }

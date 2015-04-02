@@ -188,7 +188,6 @@ namespace iTunesTrackInfo
             });
             menu.Checked = this.m_isAutoHideMouseOver;
             m_trayNotifyIcon.ContextMenu.MenuItems.Add(menu);
-
             m_trayNotifyIcon.ContextMenu.MenuItems.Add("-");
 
             m_trayNotifyIcon.ContextMenu.MenuItems.Add(new System.Windows.Forms.MenuItem("Exit", (s, e) =>

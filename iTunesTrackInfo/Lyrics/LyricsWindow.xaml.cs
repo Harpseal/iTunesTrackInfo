@@ -214,6 +214,8 @@ namespace iTunesLyrics
             {
                 labelEncoding.Content = m_lrcReader.getEncoding().EncodingName;
                 m_fLyricsShift = 0;
+                labelLyricsShift.Content = String.Format("{0:+0.00;-0.00;+0.00} s", m_fLyricsShift);
+
                 return true;
             }
             return false;
@@ -307,33 +309,36 @@ namespace iTunesLyrics
 
                 if (m_iSmoothScrollInterval > 0)
                 {
-                    isHitAni = getLrcRatioBySecond(second + (float)m_iSmoothScrollInterval / 1000.0f, ref idxAni, ref ratio);
+                    isHitAni = getLrcRatioBySecond(second + (float)m_iSmoothScrollInterval*2 / 1000.0f, ref idxAni, ref ratio);
 
-                    tbox = spLyricsMain.Children[idxAni] as TextBox;
-                    offset = tbox.TranslatePoint(new Point(0, 0), svLyricsScroll);
-                    
-                    //m_daSmoothScroll.From = svLyricsScroll.VerticalOffset;
-                    m_daSmoothScroll.To = Math.Max((offset.Y + svLyricsScroll.VerticalOffset) - svLyricsScroll.ViewportHeight / 2 + tbox.ActualHeight * ratio, 0);
-                    m_sbAniSmoothScroll.Begin();
-
-                    if (isHitAni)
+                    if (idxAni >= 0 && idxAni < spLyricsMain.Children.Count)
                     {
-                        if (idxAni != m_iAniHitLyrics)
+                        tbox = spLyricsMain.Children[idxAni] as TextBox;
+                        offset = tbox.TranslatePoint(new Point(0, 0), svLyricsScroll);
+
+                        //m_daSmoothScroll.From = svLyricsScroll.VerticalOffset;
+                        m_daSmoothScroll.To = Math.Max((offset.Y + svLyricsScroll.VerticalOffset) - svLyricsScroll.ViewportHeight / 2 + tbox.ActualHeight * ratio, 0);
+                        m_sbAniSmoothScroll.Begin();
+
+                        if (isHitAni)
                         {
-
-                            if (tbox.Text.Length != 0)
+                            if (idxAni != m_iAniHitLyrics)
                             {
-                                tbox.Foreground.BeginAnimation(SolidColorBrush.ColorProperty, m_caTextColorIn);
-                                tbox.Background.BeginAnimation(SolidColorBrush.ColorProperty, m_caTextBGIn);
-                            }
 
-                            if (m_iAniHitLyrics != m_iPreHitLyrics && m_iAniHitLyrics >= 0 && m_iAniHitLyrics < spLyricsMain.Children.Count)
-                            {
-                                (spLyricsMain.Children[m_iAniHitLyrics] as TextBox).Foreground.BeginAnimation(SolidColorBrush.ColorProperty, m_caTextColorOut);
-                                (spLyricsMain.Children[m_iAniHitLyrics] as TextBox).Background.BeginAnimation(SolidColorBrush.ColorProperty, m_caTextBGOut);
+                                if (tbox.Text.Length != 0)
+                                {
+                                    tbox.Foreground.BeginAnimation(SolidColorBrush.ColorProperty, m_caTextColorIn);
+                                    tbox.Background.BeginAnimation(SolidColorBrush.ColorProperty, m_caTextBGIn);
+                                }
+
+                                if (m_iAniHitLyrics != m_iPreHitLyrics && m_iAniHitLyrics >= 0 && m_iAniHitLyrics < spLyricsMain.Children.Count)
+                                {
+                                    (spLyricsMain.Children[m_iAniHitLyrics] as TextBox).Foreground.BeginAnimation(SolidColorBrush.ColorProperty, m_caTextColorOut);
+                                    (spLyricsMain.Children[m_iAniHitLyrics] as TextBox).Background.BeginAnimation(SolidColorBrush.ColorProperty, m_caTextBGOut);
+                                }
                             }
+                            m_iAniHitLyrics = idxAni;
                         }
-                        m_iAniHitLyrics = idxAni;
                     }
                 }
                 else
@@ -361,7 +366,7 @@ namespace iTunesLyrics
         public bool getLrcRatioBySecond(float second,ref int index,ref float ratio)
         {
             second += m_fLyricsShift;
-            if (m_lrcReader.m_listLyricMain == null)
+            if (m_lrcReader.m_listLyricMain == null || m_lrcReader.m_listLyricMain.Count == 0)
             {
                 index = 0;
                 ratio = 0;
@@ -372,7 +377,7 @@ namespace iTunesLyrics
                 m_iPreLrc = 0;
             if (m_iPreLrc >= m_lrcReader.m_listLyricMain.Count)
                 m_iPreLrc = m_lrcReader.m_listLyricMain.Count -1;
-
+            //Console.WriteLine("error {0} {1}", m_iPreLrc, m_lrcReader.m_listLyricMain.Count);
             int searchDir;
             if (second >= m_lrcReader.m_listLyricMain[m_iPreLrc].fTimeStampStart)
                 searchDir = 1;
