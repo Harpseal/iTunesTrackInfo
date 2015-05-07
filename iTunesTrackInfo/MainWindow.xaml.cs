@@ -745,6 +745,8 @@ namespace iTunesTrackInfo
                                     labelTrackName.Content = m_iTunes.CurrentTrack.TrackNumber + "." + m_iTunes.CurrentTrack.Name;
                                 labelArtist.Content = m_iTunes.CurrentTrack.Artist;
 
+                                this.Title = m_iTunes.CurrentTrack.Name;
+
                                 if (iIFileTrack != null)
                                 {
                                     curTrackFolder = System.IO.Path.GetDirectoryName(iIFileTrack.Location);
@@ -1401,6 +1403,14 @@ namespace iTunesTrackInfo
 
            }
 
+       }
+
+       private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
+       {
+           Point pointLU = imageTrackArtwrok.TranslatePoint(new Point(0, 0), this);
+           Point pointRD = imageTrackArtwrok.TranslatePoint(new Point(imageTrackArtwrok.ActualWidth, imageTrackArtwrok.ActualHeight), this);
+           Console.WriteLine("pointLU: " + pointLU + "  pointRD: " + pointLU + "  RD " + (this.ActualWidth - pointRD.X) + "," + (this.ActualHeight - pointRD.Y));
+           TaskbarItemInfo.ThumbnailClipMargin = new Thickness(pointLU.X, pointLU.Y, this.ActualWidth - pointRD.X, this.ActualHeight - pointRD.Y);
        }
 
     }

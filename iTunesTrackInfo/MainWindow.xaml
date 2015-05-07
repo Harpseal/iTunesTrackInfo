@@ -7,7 +7,7 @@
         MouseLeave="Window_MouseLeave"
         Loaded="Window_Loaded"
         Closing="Window_Closing" 
-        AllowsTransparency="True" WindowStyle="None"  SizeToContent="WidthAndHeight" Background="{x:Null}" ResizeMode="NoResize" Icon="Resources/iTunes.ico">
+        AllowsTransparency="True" WindowStyle="None"  SizeToContent="WidthAndHeight" Background="{x:Null}" ResizeMode="NoResize" Icon="Resources/iTunes.ico" SizeChanged="Window_SizeChanged">
 
     <Window.Resources>
         <Style x:Key="iTunesInfoToggleButtonStyle" BasedOn="{StaticResource {x:Static ToolBar.ToggleButtonStyleKey}}" TargetType="ToggleButton">
